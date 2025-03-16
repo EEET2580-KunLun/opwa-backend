@@ -1,4 +1,4 @@
-package eeet2580.kunlun.opwa.backend.dtos.resp;
+package eeet2580.kunlun.opwa.backend.dto.resp;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

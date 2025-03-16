@@ -1,6 +1,7 @@
-package eeet2580.kunlun.opwa.backend.models;
+package eeet2580.kunlun.opwa.backend.model;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;

@@ -1,4 +1,4 @@
-package eeet2580.kunlun.opwa.backend.models;
+package eeet2580.kunlun.opwa.backend.model;
 
 import lombok.Data;
 

@@ -1,6 +1,6 @@
-package eeet2580.kunlun.opwa.backend.dtos.req;
+package eeet2580.kunlun.opwa.backend.dto.req;
 
-import eeet2580.kunlun.opwa.backend.models.AddressEntity;
+import eeet2580.kunlun.opwa.backend.model.AddressEntity;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

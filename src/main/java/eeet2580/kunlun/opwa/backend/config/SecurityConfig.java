@@ -1,5 +1,6 @@
-package eeet2580.kunlun.opwa.backend.configs;
+package eeet2580.kunlun.opwa.backend.config;
 
+import eeet2580.kunlun.opwa.backend.service.StaffService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
