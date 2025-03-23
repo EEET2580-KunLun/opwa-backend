@@ -9,6 +9,12 @@ import java.time.LocalDate;
 @Data
 @Document(collection = "staff")
 public class StaffEntity {
+    public enum Role {
+        ADMIN,
+        OPERATOR,
+        TICKET_AGENT
+    }
+
     @Id
     private String id;
     private String username;
@@ -18,11 +24,12 @@ public class StaffEntity {
     private String middleName;
     private String lastName;
     private String nationalId;
-    private String role; // ADMIN, OPERATOR, TICKET_AGENT
+    private Role role;
     private AddressEntity residenceAddressEntity;
     private String phoneNumber;
     private LocalDate dateOfBirth;
     private boolean employed;
     private String shift;
+    private String avatar;
 }
 
