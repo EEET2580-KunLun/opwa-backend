@@ -1,4 +1,4 @@
-package eeet2580.kunlun.opwa.backend.dto.resp;
+package eeet2580.kunlun.opwa.backend.auth.dto.resp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;

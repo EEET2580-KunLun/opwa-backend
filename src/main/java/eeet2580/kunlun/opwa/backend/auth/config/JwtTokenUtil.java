@@ -1,9 +1,8 @@
-package eeet2580.kunlun.opwa.backend.config;
+package eeet2580.kunlun.opwa.backend.auth.config;
 
-import eeet2580.kunlun.opwa.backend.model.StaffEntity;
+import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -32,11 +31,11 @@ public class JwtTokenUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", staff.getRole().name());
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(staff.getEmail())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .claims(claims)
+                .subject(staff.getEmail())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration * 1000))
+                .signWith(getSigningKey())
                 .compact();
     }
 

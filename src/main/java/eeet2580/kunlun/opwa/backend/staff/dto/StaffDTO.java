@@ -1,8 +1,7 @@
-package eeet2580.kunlun.opwa.backend.dto.req;
+package eeet2580.kunlun.opwa.backend.staff.dto;
 
-import com.fasterxml.jackson.databind.annotation.EnumNaming;
-import eeet2580.kunlun.opwa.backend.model.AddressEntity;
-import eeet2580.kunlun.opwa.backend.model.StaffEntity.Role;
+import eeet2580.kunlun.opwa.backend.staff.model.AddressEntity;
+import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity.Role;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -26,8 +25,7 @@ public class StaffDTO {
     private String username;
 
     @NotBlank
-    @Pattern(regexp = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%]).{8,}",
-            message = "Password must contain uppercase, lowercase, digit, special character, and minimum 8 characters.")
+    @Pattern(regexp = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%]).{8,}", message = "Password must contain uppercase, lowercase, digit, special character, and minimum 8 characters.")
     private String password;
 
     @Pattern(regexp = "^[a-zA-ZÀ-ỹ\\s]{1,50}$", message = "Name must only contain alphabetic characters.")
@@ -54,10 +52,9 @@ public class StaffDTO {
 
     private Role role;
 
-    @Pattern(regexp="^(DAY|EVENING|NIGHT)$", message="Invalid shift.")
+    @Pattern(regexp = "^(DAY|EVENING|NIGHT)$", message = "Invalid shift.")
     private String shift;
 
     @Valid
     private AddressEntity address;
 }
-

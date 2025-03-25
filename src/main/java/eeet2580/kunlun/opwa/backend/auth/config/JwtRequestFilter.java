@@ -1,4 +1,4 @@
-package eeet2580.kunlun.opwa.backend.config;
+package eeet2580.kunlun.opwa.backend.auth.config;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.lang.NonNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,7 +28,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain chain)
+
+            throws ServletException, IOException {
         final String requestTokenHeader = request.getHeader("Authorization");
 
         String email = null;
@@ -40,17 +46,28 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 email = claims.getSubject();
                 String role = claims.get("role", String.class);
 
-                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (email != null && role != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
 
                     if (!jwtTokenUtil.isTokenExpired(jwtToken)) {
                         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                                userDetails, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-                        usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                                userDetails,
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+
+                        usernamePasswordAuthenticationToken
+                                .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
                         SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                     }
                 }
+
+                System.out.println("JWT token received: " + jwtToken);
+                System.out.println("Extracted email: " + email);
+                System.out.println("Extracted role: " + role);
+
             } catch (Exception e) {
+                e.printStackTrace();
                 System.out.println("Unable to get JWT Token or JWT Token has expired");
             }
         }
