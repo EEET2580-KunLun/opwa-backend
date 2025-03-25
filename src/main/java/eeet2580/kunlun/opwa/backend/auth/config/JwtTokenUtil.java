@@ -6,7 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import eeet2580.kunlun.opwa.backend.auth.model.StaffEntity;
+import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
