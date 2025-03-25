@@ -1,18 +1,19 @@
-package eeet2580.kunlun.opwa.backend.config;
+package eeet2580.kunlun.opwa.backend.auth.config;
 
-import eeet2580.kunlun.opwa.backend.model.StaffEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import eeet2580.kunlun.opwa.backend.auth.model.StaffEntity;
+
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.crypto.SecretKey;
 
 @Component
 public class JwtTokenUtil {
@@ -23,7 +24,7 @@ public class JwtTokenUtil {
     @Value("${jwt.expiration}")
     private Long expiration;
 
-    private Key getSigningKey() {
+    private SecretKey getSigningKey() {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
@@ -31,21 +32,22 @@ public class JwtTokenUtil {
     public String generateToken(StaffEntity staff) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", staff.getRole().name());
+
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(staff.getEmail())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .claims(claims)
+                .subject(staff.getEmail())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration * 1000))
+                .signWith(getSigningKey())
                 .compact();
     }
 
     public Claims getAllClaimsFromToken(String token) {
         return Jwts.parser()
-                .setSigningKey(getSigningKey())
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     public boolean isTokenExpired(String token) {

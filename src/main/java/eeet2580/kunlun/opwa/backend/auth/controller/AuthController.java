@@ -1,10 +1,10 @@
-package eeet2580.kunlun.opwa.backend.controller;
+package eeet2580.kunlun.opwa.backend.auth.controller;
 
-import eeet2580.kunlun.opwa.backend.dto.req.LoginDTO;
-import eeet2580.kunlun.opwa.backend.dto.req.StaffDTO;
-import eeet2580.kunlun.opwa.backend.dto.resp.ResponseDTO;
-import eeet2580.kunlun.opwa.backend.model.StaffEntity;
-import eeet2580.kunlun.opwa.backend.service.AuthService;
+import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginDTO;
+import eeet2580.kunlun.opwa.backend.auth.dto.req.StaffDTO;
+import eeet2580.kunlun.opwa.backend.auth.dto.resp.ResponseDTO;
+import eeet2580.kunlun.opwa.backend.auth.model.StaffEntity;
+import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
