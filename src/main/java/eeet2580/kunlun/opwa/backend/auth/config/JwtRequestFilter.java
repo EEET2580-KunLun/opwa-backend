@@ -62,10 +62,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     }
                 }
 
-                System.out.println("JWT token received: " + jwtToken);
-                System.out.println("Extracted email: " + email);
-                System.out.println("Extracted role: " + role);
-
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Unable to get JWT Token or JWT Token has expired");

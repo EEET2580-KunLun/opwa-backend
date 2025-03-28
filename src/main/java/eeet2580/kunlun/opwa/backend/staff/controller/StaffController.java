@@ -54,7 +54,7 @@ public class StaffController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
     @PostMapping("/invite")
     public ResponseEntity<String> inviteStaff(
             @RequestParam Role role,
