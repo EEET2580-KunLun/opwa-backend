@@ -62,8 +62,6 @@ public class StaffController {
 
         String token = staffInviteService.generateInvite(role);
 
-        System.out.println(token);
-
         String baseUrl = request.getScheme()
                 + "://"
                 + request.getServerName()
