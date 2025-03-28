@@ -7,7 +7,7 @@ import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface AuthService extends UserDetailsService {
-    StaffEntity registerStaff(StaffDTO dto);
+    StaffEntity registerStaff(StaffDTO dto, String token);
 
     StaffEntity findByEmail(String email);
 

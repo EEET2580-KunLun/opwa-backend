@@ -19,8 +19,11 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseDTO<StaffEntity>> register(@Valid @RequestBody StaffDTO staffDto) {
-        StaffEntity staff = authService.registerStaff(staffDto);
+    public ResponseEntity<ResponseDTO<StaffEntity>> register(
+            @RequestParam("token") String token,
+            @Valid @RequestBody StaffDTO staffDto) {
+
+        StaffEntity staff = authService.registerStaff(staffDto, token);
         ResponseDTO<StaffEntity> response = new ResponseDTO<>("200", "Account created successfully.", staff);
         return ResponseEntity.ok(response);
     }
