@@ -32,6 +32,12 @@ public class AuthController {
     }
 
     // for testing authorization
+    @GetMapping("/master-admin")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<String> masterAdminEndpoint() {
+        return ResponseEntity.ok("Master Admin access");
+    }
+
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> adminEndpoint() {
