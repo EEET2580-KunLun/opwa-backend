@@ -1,4 +1,4 @@
-package eeet2580.kunlun.opwa.backend.dto.req;
+package eeet2580.kunlun.opwa.backend.auth.dto.req;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

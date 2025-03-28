@@ -1,12 +1,12 @@
-package eeet2580.kunlun.opwa.backend.service.impl;
+package eeet2580.kunlun.opwa.backend.auth.service.impl;
 
-import eeet2580.kunlun.opwa.backend.config.JwtTokenUtil;
-import eeet2580.kunlun.opwa.backend.dto.req.LoginDTO;
-import eeet2580.kunlun.opwa.backend.dto.req.StaffDTO;
-import eeet2580.kunlun.opwa.backend.dto.resp.ResponseDTO;
-import eeet2580.kunlun.opwa.backend.model.StaffEntity;
-import eeet2580.kunlun.opwa.backend.repository.StaffRepository;
-import eeet2580.kunlun.opwa.backend.service.AuthService;
+import eeet2580.kunlun.opwa.backend.auth.config.JwtTokenUtil;
+import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginDTO;
+import eeet2580.kunlun.opwa.backend.auth.dto.req.StaffDTO;
+import eeet2580.kunlun.opwa.backend.auth.dto.resp.ResponseDTO;
+import eeet2580.kunlun.opwa.backend.auth.repository.StaffRepository;
+import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
+import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,8 +32,7 @@ public class AuthServiceImpl implements AuthService {
         return new org.springframework.security.core.userdetails.User(
                 staff.getEmail(),
                 staff.getPassword(),
-                List.of(new SimpleGrantedAuthority("ROLE_" + staff.getRole()))
-        );
+                List.of(new SimpleGrantedAuthority("ROLE_" + staff.getRole())));
     }
 
     @Override
