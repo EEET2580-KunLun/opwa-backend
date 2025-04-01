@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @Document(collection = "staff")
 public class StaffEntity {
     public enum Role {
+        MASTER_ADMIN,
         ADMIN,
         OPERATOR,
         TICKET_AGENT

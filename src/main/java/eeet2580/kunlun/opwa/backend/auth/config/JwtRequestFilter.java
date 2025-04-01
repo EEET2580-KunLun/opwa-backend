@@ -12,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import org.springframework.lang.NonNull;
 
 import java.io.IOException;
@@ -33,6 +32,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain chain)
+
             throws ServletException, IOException {
         final String requestTokenHeader = request.getHeader("Authorization");
 
@@ -46,19 +46,25 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 email = claims.getSubject();
                 String role = claims.get("role", String.class);
 
-                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (email != null && role != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
 
                     if (!jwtTokenUtil.isTokenExpired(jwtToken)) {
                         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                                userDetails, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                                userDetails,
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+
                         usernamePasswordAuthenticationToken
                                 .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
                         SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                     }
                 }
+
             } catch (Exception e) {
-                System.out.println("Unable to get JWT Token or JWT Token has expired");
+                e.printStackTrace();
+                // System.out.println("Unable to get JWT Token or JWT Token has expired");
             }
         }
 

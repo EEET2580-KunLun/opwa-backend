@@ -1,9 +1,9 @@
 package eeet2580.kunlun.opwa.backend.auth.controller;
 
-import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginDTO;
-import eeet2580.kunlun.opwa.backend.auth.dto.req.StaffDTO;
-import eeet2580.kunlun.opwa.backend.auth.dto.resp.ResponseDTO;
 import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
+import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginDTO;
+import eeet2580.kunlun.opwa.backend.auth.dto.resp.ResponseDTO;
+import eeet2580.kunlun.opwa.backend.staff.dto.StaffDTO;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +19,11 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseDTO<StaffEntity>> register(@Valid @RequestBody StaffDTO staffDto) {
-        StaffEntity staff = authService.registerStaff(staffDto);
+    public ResponseEntity<ResponseDTO<StaffEntity>> register(
+            @RequestParam("token") String token,
+            @Valid @RequestBody StaffDTO staffDto) {
+
+        StaffEntity staff = authService.registerStaff(staffDto, token);
         ResponseDTO<StaffEntity> response = new ResponseDTO<>("200", "Account created successfully.", staff);
         return ResponseEntity.ok(response);
     }
@@ -32,6 +35,12 @@ public class AuthController {
     }
 
     // for testing authorization
+    @GetMapping("/master-admin")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<String> masterAdminEndpoint() {
+        return ResponseEntity.ok("Master Admin access");
+    }
+
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> adminEndpoint() {

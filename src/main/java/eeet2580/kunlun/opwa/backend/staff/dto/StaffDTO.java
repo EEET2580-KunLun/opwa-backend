@@ -1,5 +1,7 @@
-package eeet2580.kunlun.opwa.backend.auth.dto.req;
+package eeet2580.kunlun.opwa.backend.staff.dto;
 
+import eeet2580.kunlun.opwa.backend.staff.model.AddressEntity;
+import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity.Role;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -10,9 +12,6 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.time.LocalDate;
-
-import eeet2580.kunlun.opwa.backend.staff.model.AddressEntity;
-import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity.Role;
 
 @Data
 public class StaffDTO {

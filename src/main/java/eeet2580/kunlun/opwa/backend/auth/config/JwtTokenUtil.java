@@ -1,12 +1,11 @@
 package eeet2580.kunlun.opwa.backend.auth.config;
 
+import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -32,7 +31,6 @@ public class JwtTokenUtil {
     public String generateToken(StaffEntity staff) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", staff.getRole().name());
-
         return Jwts.builder()
                 .claims(claims)
                 .subject(staff.getEmail())

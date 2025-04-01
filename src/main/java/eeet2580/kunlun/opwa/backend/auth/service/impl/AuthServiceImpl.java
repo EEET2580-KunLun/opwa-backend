@@ -1,13 +1,14 @@
 package eeet2580.kunlun.opwa.backend.auth.service.impl;
 
+import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
 import eeet2580.kunlun.opwa.backend.auth.config.JwtTokenUtil;
 import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginDTO;
-import eeet2580.kunlun.opwa.backend.auth.dto.req.StaffDTO;
 import eeet2580.kunlun.opwa.backend.auth.dto.resp.ResponseDTO;
-import eeet2580.kunlun.opwa.backend.auth.repository.StaffRepository;
-import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
+import eeet2580.kunlun.opwa.backend.staff.dto.StaffDTO;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
+import eeet2580.kunlun.opwa.backend.staff.repository.StaffRepository;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -36,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public StaffEntity registerStaff(StaffDTO dto) {
+    public StaffEntity registerStaff(StaffDTO dto, String token) {
         // Check if email already exists
         if (staffRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
@@ -84,11 +85,11 @@ public class AuthServiceImpl implements AuthService {
             StaffEntity staff = staffRepository.findByEmail(loginDto.getEmail())
                     .orElseThrow(() -> new UsernameNotFoundException("Email not found"));
 
-            System.out.println("User found: " + staff.getEmail());
-            System.out.println("Hashed password in DB: " + staff.getPassword());
+            // System.out.println("User found: " + staff.getEmail());
+            // System.out.println("Hashed password in DB: " + staff.getPassword());
 
             boolean matches = passwordEncoder.matches(loginDto.getPassword(), staff.getPassword());
-            System.out.println("Password matches: " + matches);
+            // System.out.println("Password matches: " + matches);
 
             if (!matches) {
                 return new ResponseDTO<>("401", "Invalid email or password", null);
