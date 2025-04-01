@@ -3,12 +3,13 @@ package eeet2580.kunlun.opwa.backend.auth.service.impl;
 import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
 import eeet2580.kunlun.opwa.backend.auth.config.JwtTokenUtil;
 import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginDTO;
-import eeet2580.kunlun.opwa.backend.auth.dto.resp.ResponseDTO;
 import eeet2580.kunlun.opwa.backend.staff.dto.StaffDTO;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import eeet2580.kunlun.opwa.backend.staff.repository.StaffRepository;
+import io.jsonwebtoken.security.WeakKeyException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -80,25 +81,18 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ResponseDTO<String> login(LoginDTO loginDto) {
+    public String login(LoginDTO loginDto) {
         try {
             StaffEntity staff = staffRepository.findByEmail(loginDto.getEmail())
-                    .orElseThrow(() -> new UsernameNotFoundException("Email not found"));
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + loginDto.getEmail()));
 
-            // System.out.println("User found: " + staff.getEmail());
-            // System.out.println("Hashed password in DB: " + staff.getPassword());
-
-            boolean matches = passwordEncoder.matches(loginDto.getPassword(), staff.getPassword());
-            // System.out.println("Password matches: " + matches);
-
-            if (!matches) {
-                return new ResponseDTO<>("401", "Invalid email or password", null);
+            if (!passwordEncoder.matches(loginDto.getPassword(), staff.getPassword())) {
+                throw new BadCredentialsException("Invalid credentials");
             }
 
-            String token = jwtTokenUtil.generateToken(staff);
-            return new ResponseDTO<>("200", "Login successful", token);
-        } catch (Exception e) {
-            return new ResponseDTO<>("401", "Invalid email or password", null);
+            return jwtTokenUtil.generateToken(staff);
+        } catch (WeakKeyException e) {
+            throw new RuntimeException("Error generating token", e);
         }
     }
 }

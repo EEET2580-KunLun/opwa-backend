@@ -31,12 +31,8 @@ public class StaffController {
     @GetMapping("/{id}")
     public ResponseEntity<StaffEntity> getStaffById(@PathVariable String id) {
         return staffService.getStaffById(id)
-                .map(staff -> {
-                    return ResponseEntity.ok(staff);
-                })
-                .orElseGet(() -> {
-                    return ResponseEntity.status(404).build();
-                });
+                .map(staff -> ResponseEntity.ok(staff))
+                .orElseGet(() -> ResponseEntity.status(404).build());
     }
 
     @PostMapping
