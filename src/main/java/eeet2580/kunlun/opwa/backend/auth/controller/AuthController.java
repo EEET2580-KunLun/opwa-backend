@@ -30,8 +30,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ResponseDTO<String>> login(@Valid @RequestBody LoginDTO loginDto) {
-        ResponseDTO<String> response = authService.login(loginDto);
-        return ResponseEntity.status(response.getStatus().equals("200") ? 200 : 401).body(response);
+        String token = authService.login(loginDto);
+        ResponseDTO<String> response = new ResponseDTO<>("200", "Login successful", token);
+        return ResponseEntity.ok(response);
     }
 
     // for testing authorization

@@ -13,5 +13,5 @@ public interface AuthService extends UserDetailsService {
 
     StaffEntity findByUsername(String username);
 
-    ResponseDTO<String> login(LoginDTO loginDto);
+    String login(LoginDTO loginDto);
 }
