@@ -1,5 +1,18 @@
 spring:
+  application:
+    name: backend
   data:
     mongodb:
-      uri: mongodb+srv://kunlun_opwa:BroikEeqKqLwCZ8D@opwa.xv64b.mongodb.net/?retryWrites=true&w=majority&appName=OPWA
-      database: opwa_db
+      uri: mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_HOST}/?retryWrites=true&w=majority&appName=${MONGODB_APP_NAME}
+      database: ${MONGODB_DATABASE}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+
+server:
+  port: ${SERVER_PORT}
+
+app:
+  frontend:
+    base-url: ${FRONTEND_BASE_URL}
