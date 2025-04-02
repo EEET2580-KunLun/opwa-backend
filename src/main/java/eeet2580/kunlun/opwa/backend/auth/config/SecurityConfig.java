@@ -1,8 +1,12 @@
 package eeet2580.kunlun.opwa.backend.auth.config;
 
+import eeet2580.kunlun.opwa.backend.auth.handler.OAuth2AuthenticationSuccessHandler;
+import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
+import eeet2580.kunlun.opwa.backend.auth.service.impl.OAuth2UserServiceImpl;
+import eeet2580.kunlun.opwa.backend.staff.repository.StaffRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -10,7 +14,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -18,26 +21,17 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
-
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
     private final AuthService authService;
     private final JwtTokenUtil jwtTokenUtil;
-
-    public SecurityConfig(@Lazy AuthService authService, JwtTokenUtil jwtTokenUtil) {
-        this.authService = authService;
-        this.jwtTokenUtil = jwtTokenUtil;
-    }
-
-    @Bean
-    public PasswordEncoder encoder() {
-        return new BCryptPasswordEncoder();
-    }
+    private final StaffRepository staffRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     public AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception {
@@ -50,13 +44,27 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/oauth2/**", "/login/**").permitAll()
                         .anyRequest().authenticated())
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2AuthenticationSuccessHandler())
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oAuth2UserService())))
                 .httpBasic(Customizer.withDefaults())
                 .addFilterBefore(jwtRequestFilter(), UsernamePasswordAuthenticationFilter.class)
                 .userDetailsService(authService);
 
         return http.build();
+    }
+
+    @Bean
+    public OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
+        return new OAuth2AuthenticationSuccessHandler(jwtTokenUtil);
+    }
+
+    @Bean
+    public OAuth2UserServiceImpl oAuth2UserService() {
+        return new OAuth2UserServiceImpl(staffRepository, passwordEncoder);
     }
 
     @Bean

@@ -15,4 +15,6 @@ public interface StaffService {
     StaffEntity updateStaff(String id, StaffEntity updatedStaff);
 
     void deleteStaff(String id);
+
+    Optional<StaffEntity> getStaffByEmail(String email);
 }
