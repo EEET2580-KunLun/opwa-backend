@@ -44,4 +44,9 @@ public class StaffServiceImpl implements StaffService {
     public void deleteStaff(String id) {
         staffRepository.deleteById(id);
     }
+
+    @Override
+    public Optional<StaffEntity> getStaffByEmail(String email) {
+        return staffRepository.findByEmail(email);
+    }
 }

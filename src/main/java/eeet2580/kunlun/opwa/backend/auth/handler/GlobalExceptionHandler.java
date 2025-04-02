@@ -1,4 +1,4 @@
-package eeet2580.kunlun.opwa.backend.auth.exception;
+package eeet2580.kunlun.opwa.backend.auth.handler;
 
 import eeet2580.kunlun.opwa.backend.auth.dto.resp.ResponseDTO;
 import org.springframework.http.HttpStatus;

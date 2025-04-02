@@ -1,18 +1,30 @@
 spring:
-  application:
-    name: backend
-  data:
-    mongodb:
-      uri: mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_HOST}/?retryWrites=true&w=majority&appName=${MONGODB_APP_NAME}
-      database: ${MONGODB_DATABASE}
+    application:
+        name: backend
+    data:
+        mongodb:
+            uri: mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_HOST}/?retryWrites=true&w=majority&appName=${MONGODB_APP_NAME}
+            database: ${MONGODB_DATABASE}
+    security:
+        oauth2:
+            client:
+                registration:
+                    google:
+                        client-id: ${GOOGLE_CLIENT_ID}
+                        client-secret: ${GOOGLE_CLIENT_SECRET}
+                        scope: email, profile
+firebase:
+    bucket-name: ${FIREBASE_BUCKET_NAME}
+    project-id: ${FIREBASE_PROJECT_ID}
+    credentials-path: ${FIREBASE_CREDENTIALS_PATH}
 
 jwt:
-  secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION}
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION}
 
 server:
-  port: ${SERVER_PORT}
+    port: ${SERVER_PORT}
 
 app:
-  frontend:
-    base-url: ${FRONTEND_BASE_URL}
+    frontend:
+        base-url: ${FRONTEND_BASE_URL}
