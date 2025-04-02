@@ -1,26 +1,37 @@
 package eeet2580.kunlun.opwa.backend.staff.controller;
 
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
+import eeet2580.kunlun.opwa.backend.staff.service.PictureService;
 import eeet2580.kunlun.opwa.backend.staff.service.StaffInviteService;
 import eeet2580.kunlun.opwa.backend.staff.service.StaffService;
 import jakarta.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/staff")
+@RequiredArgsConstructor
 public class StaffController {
-
-    @Autowired
-    private StaffService staffService;
-    @Autowired
-    private StaffInviteService staffInviteService;
+    private final StaffService staffService;
+    private final StaffInviteService staffInviteService;
+    private final PictureService pictureService;
 
     @GetMapping
     public ResponseEntity<List<StaffEntity>> getAllStaff() {
@@ -72,9 +83,32 @@ public class StaffController {
                 + "://"
                 + request.getServerName()
                 + (request.getServerPort() != 80 && request.getServerPort() != 443
-                        ? ":" + request.getServerPort()
-                        : "");
+                ? ":" + request.getServerPort()
+                : "");
         String link = baseUrl + "/auth/register?token=" + token;
         return ResponseEntity.ok(Map.of("inviteLink", link));
+    }
+
+    @PostMapping("/avatar")
+    public ResponseEntity<?> uploadAvatar(
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
+        try {
+            String email = authentication.getName();
+            Optional<StaffEntity> staffOptional = staffService.getStaffByEmail(email);
+
+            if (staffOptional.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "Staff not found"));
+            }
+
+            StaffEntity staff = staffOptional.get();
+            String avatarUrl = pictureService.uploadPicture(file, staff.getId());
+            staff.setAvatarUrl(avatarUrl);
+            staffService.updateStaff(staff.getId(), staff);
+
+            return ResponseEntity.ok(Map.of("avatarUrl", avatarUrl));
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to upload avatar: " + e.getMessage()));
+        }
     }
 }
