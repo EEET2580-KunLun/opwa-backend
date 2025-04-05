@@ -41,7 +41,14 @@ public class FirebaseConfig {
                 .setStorageBucket(bucketName)
                 .build();
 
-        FirebaseApp app = FirebaseApp.initializeApp(options);
+        FirebaseApp app;
+        try {
+            app = FirebaseApp.getInstance();
+        } catch (IllegalStateException e) {
+            // No app exists, initialize a new one
+            app = FirebaseApp.initializeApp(options);
+        }
+
         return StorageClient.getInstance(app);
     }
 
