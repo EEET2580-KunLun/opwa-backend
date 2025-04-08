@@ -1,11 +1,17 @@
 package eeet2580.kunlun.opwa.backend.staff.controller;
 
+import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
+import eeet2580.kunlun.opwa.backend.staff.dto.mapper.StaffMapper;
+import eeet2580.kunlun.opwa.backend.staff.dto.resp.InviteLinkRes;
+import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
+import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadAvatarRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import eeet2580.kunlun.opwa.backend.staff.service.PictureService;
 import eeet2580.kunlun.opwa.backend.staff.service.StaffInviteService;
 import eeet2580.kunlun.opwa.backend.staff.service.StaffService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -22,62 +28,73 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/staff")
 @RequiredArgsConstructor
 public class StaffController {
     private final StaffService staffService;
+    private final StaffMapper staffMapper;
     private final StaffInviteService staffInviteService;
     private final PictureService pictureService;
 
     @GetMapping
-    public ResponseEntity<List<StaffEntity>> getAllStaff() {
+    public ResponseEntity<BaseRes<List<StaffRes>>> getAllStaff() {
         List<StaffEntity> staffList = staffService.getAllStaff();
-        return ResponseEntity.ok(staffList);
+        List<StaffRes> staffDtoList = staffMapper.toDtoList(staffList);
+        BaseRes<List<StaffRes>> response = new BaseRes<>("200", "Staff list retrieved successfully", staffDtoList);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StaffEntity> getStaffById(@PathVariable String id) {
+    public ResponseEntity<BaseRes<StaffRes>> getStaffById(@PathVariable String id) {
         return staffService.getStaffById(id)
-                .map(staff -> ResponseEntity.ok(staff))
-                .orElseGet(() -> ResponseEntity.status(404).build());
+                .map(staff -> {
+                    StaffRes staffDto = staffMapper.toDto(staff);
+                    BaseRes<StaffRes> response = new BaseRes<>("200", "Staff retrieved successfully", staffDto);
+                    return ResponseEntity.ok(response);
+                })
+                .orElseGet(() -> {
+                    BaseRes<StaffRes> response = new BaseRes<>("404", "Staff not found", null);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                });
     }
 
     @PostMapping
-    public ResponseEntity<?> createStaff(@RequestBody StaffEntity staff) {
+    public ResponseEntity<BaseRes<StaffRes>> createStaff(@RequestBody StaffEntity staff) {
         StaffEntity createdStaff = staffService.createStaff(staff);
-        return ResponseEntity.status(201).body(createdStaff);
+        StaffRes staffDto = staffMapper.toDto(createdStaff);
+        BaseRes<StaffRes> response = new BaseRes<>("201", "Staff created successfully", staffDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateStaff(@PathVariable String id, @RequestBody StaffEntity staff) {
+    public ResponseEntity<BaseRes<StaffRes>> updateStaff(@PathVariable String id, @RequestBody StaffEntity staff) {
         try {
             StaffEntity updatedStaff = staffService.updateStaff(id, staff);
-            System.out.println("Updated staff " + id);
-            return ResponseEntity.ok(updatedStaff);
+            StaffRes staffDto = staffMapper.toDto(updatedStaff);
+            BaseRes<StaffRes> response = new BaseRes<>("200", "Staff updated successfully", staffDto);
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            System.out.println("Failed to update: " + id + ". Staff not found.");
-            return ResponseEntity.status(404).body(Map.of("error", "Failed to update " + id + ". Staff not found."));
+            BaseRes<StaffRes> response = new BaseRes<>("404", "Staff not found", null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteStaff(@PathVariable String id) {
+    public ResponseEntity<BaseRes<Void>> deleteStaff(@PathVariable String id) {
         if (!staffService.getStaffById(id).isPresent()) {
-            System.out.println("Failed to delete " + id + ". Staff not found.");
-            return ResponseEntity.status(404).body(Map.of("error", "Failed to delete " + id + ". Staff not found."));
+            BaseRes<Void> response = new BaseRes<>("404", "Staff not found", null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         staffService.deleteStaff(id);
-        System.out.println("Deleted staff with ID: " + id);
-        return ResponseEntity.status(204).body(Map.of("message", "Deleted staff with ID: " + id));
+        BaseRes<Void> response = new BaseRes<>("204", "Staff deleted successfully", null);
+        return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasRole('MASTER_ADMIN')")
     @PostMapping("/invite")
-    public ResponseEntity<Map<String, String>> inviteStaff(HttpServletRequest request) {
+    public ResponseEntity<BaseRes<InviteLinkRes>> inviteStaff(HttpServletRequest request) {
         String token = staffInviteService.generateInvite();
         String baseUrl = request.getScheme()
                 + "://"
@@ -86,19 +103,22 @@ public class StaffController {
                 ? ":" + request.getServerPort()
                 : "");
         String link = baseUrl + "/auth/register?token=" + token;
-        return ResponseEntity.ok(Map.of("inviteLink", link));
+        InviteLinkRes inviteLinkRes = new InviteLinkRes(link);
+        BaseRes<InviteLinkRes> response = new BaseRes<>("200", "Invitation generated successfully", inviteLinkRes);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/avatar")
-    public ResponseEntity<?> uploadAvatar(
+    public ResponseEntity<BaseRes<UploadAvatarRes>> uploadAvatar(
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
         try {
             String email = authentication.getName();
-            Optional<StaffEntity> staffOptional = staffService.getStaffByEmail(email);
+            var staffOptional = staffService.getStaffByEmail(email);
 
             if (staffOptional.isEmpty()) {
-                return ResponseEntity.status(404).body(Map.of("error", "Staff not found"));
+                BaseRes<UploadAvatarRes> response = new BaseRes<>("404", "Staff not found", null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
             StaffEntity staff = staffOptional.get();
@@ -106,9 +126,13 @@ public class StaffController {
             staff.setAvatarUrl(avatarUrl);
             staffService.updateStaff(staff.getId(), staff);
 
-            return ResponseEntity.ok(Map.of("avatarUrl", avatarUrl));
+            UploadAvatarRes avatarUrlRes = new UploadAvatarRes(avatarUrl);
+            BaseRes<UploadAvatarRes> response = new BaseRes<>("200", "Avatar uploaded successfully", avatarUrlRes);
+            return ResponseEntity.ok(response);
         } catch (IOException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Failed to upload avatar: " + e.getMessage()));
+            BaseRes<UploadAvatarRes> response = new BaseRes<>(
+                    "400", "Failed to upload avatar: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 }

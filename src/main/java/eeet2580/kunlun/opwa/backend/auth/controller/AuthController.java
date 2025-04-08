@@ -2,10 +2,10 @@ package eeet2580.kunlun.opwa.backend.auth.controller;
 
 import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginReq;
 import eeet2580.kunlun.opwa.backend.auth.dto.req.RefreshTokenReq;
-import eeet2580.kunlun.opwa.backend.auth.dto.resp.BaseRes;
 import eeet2580.kunlun.opwa.backend.auth.dto.resp.TokenRes;
 import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
-import eeet2580.kunlun.opwa.backend.staff.dto.StaffReq;
+import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
+import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

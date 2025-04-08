@@ -1,4 +1,4 @@
-package eeet2580.kunlun.opwa.backend.staff.dto;
+package eeet2580.kunlun.opwa.backend.staff.dto.req;
 
 import eeet2580.kunlun.opwa.backend.staff.model.AddressEntity;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity.Role;
