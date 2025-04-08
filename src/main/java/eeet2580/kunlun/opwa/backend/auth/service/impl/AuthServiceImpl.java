@@ -1,14 +1,14 @@
 package eeet2580.kunlun.opwa.backend.auth.service.impl;
 
-import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
 import eeet2580.kunlun.opwa.backend.auth.config.JwtTokenUtil;
-import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginDTO;
-import eeet2580.kunlun.opwa.backend.staff.dto.StaffDTO;
+import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginReq;
+import eeet2580.kunlun.opwa.backend.auth.dto.resp.TokenRes;
+import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
+import eeet2580.kunlun.opwa.backend.staff.dto.StaffReq;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import eeet2580.kunlun.opwa.backend.staff.repository.StaffRepository;
 import io.jsonwebtoken.security.WeakKeyException;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -38,32 +39,32 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public StaffEntity registerStaff(StaffDTO dto, String token) {
+    public StaffEntity registerStaff(StaffReq req, String token) {
         // Check if email already exists
-        if (staffRepository.findByEmail(dto.getEmail()).isPresent()) {
+        if (staffRepository.findByEmail(req.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
         }
 
         // Check if username already exists
-        if (staffRepository.findByUsername(dto.getUsername()).isPresent()) {
+        if (staffRepository.findByUsername(req.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already exists");
         }
 
         StaffEntity staff = new StaffEntity();
-        staff.setEmail(dto.getEmail());
-        staff.setUsername(dto.getUsername());
-        staff.setPassword(passwordEncoder.encode(dto.getPassword()));
+        staff.setEmail(req.getEmail());
+        staff.setUsername(req.getUsername());
+        staff.setPassword(passwordEncoder.encode(req.getPassword()));
 
-        staff.setFirstName(dto.getFirstName());
-        staff.setMiddleName(dto.getMiddleName());
-        staff.setLastName(dto.getLastName());
-        staff.setNationalId(dto.getNationalId());
-        staff.setPhoneNumber(dto.getPhoneNumber());
-        staff.setDateOfBirth(dto.getDateOfBirth());
-        staff.setEmployed(dto.isEmployed());
-        staff.setRole(dto.getRole());
-        staff.setShift(dto.getShift());
-        staff.setResidenceAddressEntity(dto.getAddress());
+        staff.setFirstName(req.getFirstName());
+        staff.setMiddleName(req.getMiddleName());
+        staff.setLastName(req.getLastName());
+        staff.setNationalId(req.getNationalId());
+        staff.setPhoneNumber(req.getPhoneNumber());
+        staff.setDateOfBirth(req.getDateOfBirth());
+        staff.setEmployed(req.isEmployed());
+        staff.setRole(req.getRole());
+        staff.setShift(req.getShift());
+        staff.setResidenceAddressEntity(req.getAddress());
 
         return staffRepository.save(staff);
     }
@@ -81,18 +82,48 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String login(LoginDTO loginDto) {
+    public TokenRes login(LoginReq req) {
         try {
-            StaffEntity staff = staffRepository.findByEmail(loginDto.getEmail())
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + loginDto.getEmail()));
+            StaffEntity staff = staffRepository.findByEmail(req.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + req.getEmail()));
 
-            if (!passwordEncoder.matches(loginDto.getPassword(), staff.getPassword())) {
+            if (!passwordEncoder.matches(req.getPassword(), staff.getPassword())) {
                 throw new BadCredentialsException("Invalid credentials");
             }
 
-            return jwtTokenUtil.generateToken(staff);
+            return buildTokenResFromStaff(staff);
         } catch (WeakKeyException e) {
             throw new RuntimeException("Error generating token", e);
         }
+    }
+
+    @Override
+    public TokenRes refreshToken(String refreshToken) {
+        StaffEntity staff = staffRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
+
+        if (staff.getRefreshTokenExpiry().before(new Date())) {
+            throw new BadCredentialsException("Refresh token expired");
+        }
+
+        return buildTokenResFromStaff(staff);
+    }
+
+    private TokenRes buildTokenResFromStaff(StaffEntity staff) {
+        String accessToken = jwtTokenUtil.generateToken(staff);
+
+        String refreshToken = jwtTokenUtil.generateRefreshToken();
+        Date refreshTokenExpiry = jwtTokenUtil.getRefreshTokenExpiry();
+
+        staff.setRefreshToken(refreshToken);
+        staff.setRefreshTokenExpiry(refreshTokenExpiry);
+        staffRepository.save(staff);
+
+        TokenRes tokenResponse = new TokenRes();
+        tokenResponse.setAccessToken(accessToken);
+        tokenResponse.setRefreshToken(refreshToken);
+        tokenResponse.setExpiresIn(jwtTokenUtil.getExpiration() / 1000);
+
+        return tokenResponse;
     }
 }

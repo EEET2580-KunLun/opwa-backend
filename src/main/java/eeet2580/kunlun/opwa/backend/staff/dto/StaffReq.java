@@ -14,7 +14,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class StaffDTO {
+public class StaffReq {
 
     @NotBlank
     @Email(regexp = "^[^\\s@]+@[\\w]+\\.(com|vn)$", message = "Invalid email. Must end with '.com' or '.vn'.")
