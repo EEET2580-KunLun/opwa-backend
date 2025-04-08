@@ -1,15 +1,24 @@
 package eeet2580.kunlun.opwa.backend.auth.controller;
 
+import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginReq;
+import eeet2580.kunlun.opwa.backend.auth.dto.req.RefreshTokenReq;
+import eeet2580.kunlun.opwa.backend.auth.dto.resp.BaseRes;
+import eeet2580.kunlun.opwa.backend.auth.dto.resp.TokenRes;
 import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
-import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginDTO;
-import eeet2580.kunlun.opwa.backend.auth.dto.resp.ResponseDTO;
-import eeet2580.kunlun.opwa.backend.staff.dto.StaffDTO;
+import eeet2580.kunlun.opwa.backend.staff.dto.StaffReq;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -19,20 +28,35 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseDTO<StaffEntity>> register(
+    public ResponseEntity<BaseRes<StaffEntity>> register(
             @RequestParam("token") String token,
-            @Valid @RequestBody StaffDTO staffDto) {
+            @Valid @RequestBody StaffReq req) {
 
-        StaffEntity staff = authService.registerStaff(staffDto, token);
-        ResponseDTO<StaffEntity> response = new ResponseDTO<>("200", "Account created successfully.", staff);
+        StaffEntity staff = authService.registerStaff(req, token);
+        BaseRes<StaffEntity> response = new BaseRes<>("200", "Account created successfully.", staff);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseDTO<String>> login(@Valid @RequestBody LoginDTO loginDto) {
-        String token = authService.login(loginDto);
-        ResponseDTO<String> response = new ResponseDTO<>("200", "Login successful", token);
+    public ResponseEntity<BaseRes<TokenRes>> login(@Valid @RequestBody LoginReq req) {
+        TokenRes token = authService.login(req);
+        BaseRes<TokenRes> response = new BaseRes<>("200", "Login successful", token);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<BaseRes<TokenRes>> refreshToken(
+            @Valid @RequestBody RefreshTokenReq req) {
+        try {
+            TokenRes tokens = authService.refreshToken(req.getRefreshToken());
+            BaseRes<TokenRes> response = new BaseRes<>(
+                    "200", "Token refreshed successfully", tokens);
+            return ResponseEntity.ok(response);
+        } catch (BadCredentialsException e) {
+            BaseRes<TokenRes> response = new BaseRes<>(
+                    "401", e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
     }
 
     // for testing authorization

@@ -4,15 +4,17 @@ import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.crypto.SecretKey;
 
 @Component
 public class JwtTokenUtil {
@@ -20,8 +22,12 @@ public class JwtTokenUtil {
     @Value("${jwt.secret}")
     private String secret;
 
+    @Getter
     @Value("${jwt.expiration}")
     private Long expiration;
+
+    @Value("${jwt.refresh-expiration:604800000}")
+    private Long refreshExpiration;
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
@@ -35,9 +41,20 @@ public class JwtTokenUtil {
                 .claims(claims)
                 .subject(staff.getEmail())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expiration * 1000))
+                .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    public String generateRefreshToken() {
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] tokenBytes = new byte[64];
+        secureRandom.nextBytes(tokenBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
+    }
+
+    public Date getRefreshTokenExpiry() {
+        return new Date(System.currentTimeMillis() + refreshExpiration);
     }
 
     public Claims getAllClaimsFromToken(String token) {

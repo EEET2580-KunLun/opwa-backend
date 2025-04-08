@@ -1,6 +1,6 @@
 package eeet2580.kunlun.opwa.backend.auth.handler;
 
-import eeet2580.kunlun.opwa.backend.auth.dto.resp.ResponseDTO;
+import eeet2580.kunlun.opwa.backend.auth.dto.resp.BaseRes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -17,37 +17,37 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ResponseDTO<String>> handleIllegalArgumentException(IllegalArgumentException ex) {
-        ResponseDTO<String> response = new ResponseDTO<>("400", ex.getMessage(), null);
+    public ResponseEntity<BaseRes<String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        BaseRes<String> response = new BaseRes<>("400", ex.getMessage(), null);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ResponseDTO<Map<String, String>>> handleValidationExceptions(
+    public ResponseEntity<BaseRes<Map<String, String>>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors()
                 .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-        ResponseDTO<Map<String, String>> response = new ResponseDTO<>("400", "Validation failed", errors);
+        BaseRes<Map<String, String>> response = new BaseRes<>("400", "Validation failed", errors);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ResponseDTO<String>> handleAccessDeniedException(AccessDeniedException ex) {
-        ResponseDTO<String> response = new ResponseDTO<>("403", "Access denied: insufficient permissions", null);
+    public ResponseEntity<BaseRes<String>> handleAccessDeniedException(AccessDeniedException ex) {
+        BaseRes<String> response = new BaseRes<>("403", "Access denied: insufficient permissions", null);
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ResponseDTO<String>> handleAuthenticationException(AuthenticationException ex) {
-        ResponseDTO<String> response = new ResponseDTO<>("401", "Authentication failed", null);
+    public ResponseEntity<BaseRes<String>> handleAuthenticationException(AuthenticationException ex) {
+        BaseRes<String> response = new BaseRes<>("401", "Authentication failed", null);
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ResponseDTO<String>> handleGeneralException(Exception ex) {
-        ResponseDTO<String> response = new ResponseDTO<>("500", "Internal server error", null);
+    public ResponseEntity<BaseRes<String>> handleGeneralException(Exception ex) {
+        BaseRes<String> response = new BaseRes<>("500", "Internal server error", null);
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

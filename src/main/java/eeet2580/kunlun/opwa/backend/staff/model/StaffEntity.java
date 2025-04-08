@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +40,9 @@ public class StaffEntity implements OAuth2User {
     private boolean employed;
     private String shift;
     private String avatarUrl;
+
+    private String refreshToken;
+    private Date refreshTokenExpiry;
 
     private Map<String, Object> attributes = new HashMap<>();
 
