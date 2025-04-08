@@ -1,6 +1,6 @@
 package eeet2580.kunlun.opwa.backend.auth.handler;
 
-import eeet2580.kunlun.opwa.backend.auth.dto.resp.BaseRes;
+import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;

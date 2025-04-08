@@ -4,7 +4,7 @@ import eeet2580.kunlun.opwa.backend.auth.config.JwtTokenUtil;
 import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginReq;
 import eeet2580.kunlun.opwa.backend.auth.dto.resp.TokenRes;
 import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
-import eeet2580.kunlun.opwa.backend.staff.dto.StaffReq;
+import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import eeet2580.kunlun.opwa.backend.staff.repository.StaffRepository;
 import io.jsonwebtoken.security.WeakKeyException;
