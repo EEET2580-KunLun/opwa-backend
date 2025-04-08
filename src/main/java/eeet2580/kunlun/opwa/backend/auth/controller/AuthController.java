@@ -33,14 +33,14 @@ public class AuthController {
             @Valid @RequestBody StaffReq req) {
 
         StaffEntity staff = authService.registerStaff(req, token);
-        BaseRes<StaffEntity> response = new BaseRes<>("200", "Account created successfully.", staff);
+        BaseRes<StaffEntity> response = new BaseRes<>(HttpStatus.OK.value(), "Account created successfully.", staff);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
     public ResponseEntity<BaseRes<TokenRes>> login(@Valid @RequestBody LoginReq req) {
         TokenRes token = authService.login(req);
-        BaseRes<TokenRes> response = new BaseRes<>("200", "Login successful", token);
+        BaseRes<TokenRes> response = new BaseRes<>(HttpStatus.OK.value(), "Login successful", token);
         return ResponseEntity.ok(response);
     }
 
@@ -50,11 +50,11 @@ public class AuthController {
         try {
             TokenRes tokens = authService.refreshToken(req.getRefreshToken());
             BaseRes<TokenRes> response = new BaseRes<>(
-                    "200", "Token refreshed successfully", tokens);
+                    HttpStatus.OK.value(), "Token refreshed successfully", tokens);
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException e) {
             BaseRes<TokenRes> response = new BaseRes<>(
-                    "401", e.getMessage(), null);
+                    HttpStatus.UNAUTHORIZED.value(), e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }

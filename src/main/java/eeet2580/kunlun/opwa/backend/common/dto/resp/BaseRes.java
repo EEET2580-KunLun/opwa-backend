@@ -6,11 +6,22 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BaseRes<T> {
-    private String status;
-    private String message;
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Meta {
+        private Integer status;
+        private String message;
+    }
+
+    private Meta meta;
     private T data;
+
+    public BaseRes(Integer status, String message, T data) {
+        this.meta = new Meta(status, message);
+        this.data = data;
+    }
 }

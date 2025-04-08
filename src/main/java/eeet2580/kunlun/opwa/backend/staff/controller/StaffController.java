@@ -42,7 +42,7 @@ public class StaffController {
     public ResponseEntity<BaseRes<List<StaffRes>>> getAllStaff() {
         List<StaffEntity> staffList = staffService.getAllStaff();
         List<StaffRes> staffDtoList = staffMapper.toDtoList(staffList);
-        BaseRes<List<StaffRes>> response = new BaseRes<>("200", "Staff list retrieved successfully", staffDtoList);
+        BaseRes<List<StaffRes>> response = new BaseRes<>(HttpStatus.OK.value(), "Staff list retrieved successfully", staffDtoList);
         return ResponseEntity.ok(response);
     }
 
@@ -51,11 +51,11 @@ public class StaffController {
         return staffService.getStaffById(id)
                 .map(staff -> {
                     StaffRes staffDto = staffMapper.toDto(staff);
-                    BaseRes<StaffRes> response = new BaseRes<>("200", "Staff retrieved successfully", staffDto);
+                    BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.OK.value(), "Staff retrieved successfully", staffDto);
                     return ResponseEntity.ok(response);
                 })
                 .orElseGet(() -> {
-                    BaseRes<StaffRes> response = new BaseRes<>("404", "Staff not found", null);
+                    BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.NOT_FOUND.value(), "Staff not found", null);
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                 });
     }
@@ -64,7 +64,7 @@ public class StaffController {
     public ResponseEntity<BaseRes<StaffRes>> createStaff(@RequestBody StaffEntity staff) {
         StaffEntity createdStaff = staffService.createStaff(staff);
         StaffRes staffDto = staffMapper.toDto(createdStaff);
-        BaseRes<StaffRes> response = new BaseRes<>("201", "Staff created successfully", staffDto);
+        BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.CREATED.value(), "Staff created successfully", staffDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -73,10 +73,10 @@ public class StaffController {
         try {
             StaffEntity updatedStaff = staffService.updateStaff(id, staff);
             StaffRes staffDto = staffMapper.toDto(updatedStaff);
-            BaseRes<StaffRes> response = new BaseRes<>("200", "Staff updated successfully", staffDto);
+            BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.OK.value(), "Staff updated successfully", staffDto);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            BaseRes<StaffRes> response = new BaseRes<>("404", "Staff not found", null);
+            BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.NOT_FOUND.value(), "Staff not found", null);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
@@ -84,11 +84,11 @@ public class StaffController {
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseRes<Void>> deleteStaff(@PathVariable String id) {
         if (!staffService.getStaffById(id).isPresent()) {
-            BaseRes<Void> response = new BaseRes<>("404", "Staff not found", null);
+            BaseRes<Void> response = new BaseRes<>(HttpStatus.NOT_FOUND.value(), "Staff not found", null);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         staffService.deleteStaff(id);
-        BaseRes<Void> response = new BaseRes<>("204", "Staff deleted successfully", null);
+        BaseRes<Void> response = new BaseRes<>(HttpStatus.NO_CONTENT.value(), "Staff deleted successfully", null);
         return ResponseEntity.ok(response);
     }
 
@@ -104,7 +104,7 @@ public class StaffController {
                 : "");
         String link = baseUrl + "/auth/register?token=" + token;
         InviteLinkRes inviteLinkRes = new InviteLinkRes(link);
-        BaseRes<InviteLinkRes> response = new BaseRes<>("200", "Invitation generated successfully", inviteLinkRes);
+        BaseRes<InviteLinkRes> response = new BaseRes<>(HttpStatus.OK.value(), "Invitation generated successfully", inviteLinkRes);
         return ResponseEntity.ok(response);
     }
 
@@ -117,7 +117,7 @@ public class StaffController {
             var staffOptional = staffService.getStaffByEmail(email);
 
             if (staffOptional.isEmpty()) {
-                BaseRes<UploadAvatarRes> response = new BaseRes<>("404", "Staff not found", null);
+                BaseRes<UploadAvatarRes> response = new BaseRes<>(HttpStatus.NOT_FOUND.value(), "Staff not found", null);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
@@ -127,11 +127,11 @@ public class StaffController {
             staffService.updateStaff(staff.getId(), staff);
 
             UploadAvatarRes avatarUrlRes = new UploadAvatarRes(avatarUrl);
-            BaseRes<UploadAvatarRes> response = new BaseRes<>("200", "Avatar uploaded successfully", avatarUrlRes);
+            BaseRes<UploadAvatarRes> response = new BaseRes<>(HttpStatus.OK.value(), "Avatar uploaded successfully", avatarUrlRes);
             return ResponseEntity.ok(response);
         } catch (IOException e) {
             BaseRes<UploadAvatarRes> response = new BaseRes<>(
-                    "400", "Failed to upload avatar: " + e.getMessage(), null);
+                    HttpStatus.BAD_REQUEST.value(), "Failed to upload avatar: " + e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
