@@ -6,7 +6,6 @@ import eeet2580.kunlun.opwa.backend.staff.dto.resp.InviteLinkRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadAvatarRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
-import eeet2580.kunlun.opwa.backend.staff.service.PictureService;
 import eeet2580.kunlun.opwa.backend.staff.service.StaffInviteService;
 import eeet2580.kunlun.opwa.backend.staff.service.StaffService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,7 +35,6 @@ public class StaffController {
     private final StaffService staffService;
     private final StaffMapper staffMapper;
     private final StaffInviteService staffInviteService;
-    private final PictureService pictureService;
 
     @GetMapping
     public ResponseEntity<BaseRes<List<StaffRes>>> getAllStaff() {
@@ -114,25 +112,20 @@ public class StaffController {
             Authentication authentication) {
         try {
             String email = authentication.getName();
-            var staffOptional = staffService.getStaffByEmail(email);
-
-            if (staffOptional.isEmpty()) {
-                BaseRes<UploadAvatarRes> response = new BaseRes<>(HttpStatus.NOT_FOUND.value(), "Staff not found", null);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-
-            StaffEntity staff = staffOptional.get();
-            String avatarUrl = pictureService.uploadPicture(file, staff.getId());
-            staff.setAvatarUrl(avatarUrl);
-            staffService.updateStaff(staff.getId(), staff);
+            String avatarUrl = staffService.uploadAvatar(file, email);
 
             UploadAvatarRes avatarUrlRes = new UploadAvatarRes(avatarUrl);
-            BaseRes<UploadAvatarRes> response = new BaseRes<>(HttpStatus.OK.value(), "Avatar uploaded successfully", avatarUrlRes);
+            BaseRes<UploadAvatarRes> response = new BaseRes<>(
+                    HttpStatus.OK.value(), "Avatar uploaded successfully", avatarUrlRes);
             return ResponseEntity.ok(response);
         } catch (IOException e) {
             BaseRes<UploadAvatarRes> response = new BaseRes<>(
                     HttpStatus.BAD_REQUEST.value(), "Failed to upload avatar: " + e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (RuntimeException e) {
+            BaseRes<UploadAvatarRes> response = new BaseRes<>(
+                    HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
 }

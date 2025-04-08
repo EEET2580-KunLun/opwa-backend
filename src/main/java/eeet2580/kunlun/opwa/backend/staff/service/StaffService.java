@@ -1,7 +1,9 @@
 package eeet2580.kunlun.opwa.backend.staff.service;
 
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +19,6 @@ public interface StaffService {
     void deleteStaff(String id);
 
     Optional<StaffEntity> getStaffByEmail(String email);
+
+    String uploadAvatar(MultipartFile file, String email) throws IOException;
 }
