@@ -1,4 +1,4 @@
-package eeet2580.kunlun.opwa.backend.auth.handler;
+package eeet2580.kunlun.opwa.backend.common.handler;
 
 import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
 import org.springframework.http.HttpStatus;
