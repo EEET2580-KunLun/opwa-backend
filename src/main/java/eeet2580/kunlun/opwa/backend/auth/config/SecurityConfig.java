@@ -1,5 +1,6 @@
 package eeet2580.kunlun.opwa.backend.auth.config;
 
+import eeet2580.kunlun.opwa.backend.auth.handler.CustomAuthenticationEntryPoint;
 import eeet2580.kunlun.opwa.backend.auth.handler.OAuth2AuthenticationSuccessHandler;
 import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
 import eeet2580.kunlun.opwa.backend.auth.service.impl.OAuth2UserServiceImpl;
@@ -51,10 +52,16 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService())))
                 .httpBasic(Customizer.withDefaults())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint()))  // Add this line
                 .addFilterBefore(jwtRequestFilter(), UsernamePasswordAuthenticationFilter.class)
                 .userDetailsService(authService);
 
         return http.build();
+    }
+
+    @Bean
+    public CustomAuthenticationEntryPoint customAuthenticationEntryPoint() {
+        return new CustomAuthenticationEntryPoint();
     }
 
     @Bean

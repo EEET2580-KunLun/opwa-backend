@@ -1,18 +1,19 @@
 package eeet2580.kunlun.opwa.backend.station.service;
 
+import eeet2580.kunlun.opwa.backend.station.dto.resp.StationRes;
 import eeet2580.kunlun.opwa.backend.station.model.StationEntity;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface StationService {
-    List<StationEntity> getAllStations();
+    List<StationRes> getAllStations();
 
-    Optional<StationEntity> getStationById(String id);
+    Optional<StationRes> getStationById(String id);
 
-    StationEntity createStation(StationEntity station);
+    StationRes createStation(StationEntity station);
 
-    StationEntity updateStation(String id, StationEntity updatedStation);
+    StationRes updateStation(String id, StationEntity updatedStation);
 
     void deleteStation(String id);
 }

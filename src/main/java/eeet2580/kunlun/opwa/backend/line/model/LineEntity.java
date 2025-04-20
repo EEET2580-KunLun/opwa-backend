@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.List;
 
 @Data
@@ -22,7 +21,7 @@ public class LineEntity {
     private String id;
     private String staffId;
     private String name;
-    private OffsetDateTime firstDepartureTime;
+    private long firstDepartureTime;
     private Integer frequency;
     private Status status;
 

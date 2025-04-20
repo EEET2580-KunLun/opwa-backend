@@ -5,13 +5,18 @@ import eeet2580.kunlun.opwa.backend.line.dto.req.StationInLineReq;
 import eeet2580.kunlun.opwa.backend.line.dto.resp.LineRes;
 import eeet2580.kunlun.opwa.backend.line.dto.resp.StationInLineRes;
 import eeet2580.kunlun.opwa.backend.line.model.LineEntity;
+import eeet2580.kunlun.opwa.backend.station.model.StationEntity;
+import eeet2580.kunlun.opwa.backend.station.repository.StationRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class LineMapper {
+    private final StationRepository stationRepository;
 
     public LineRes toDto(LineEntity entity) {
         if (entity == null) {
@@ -48,7 +53,6 @@ public class LineMapper {
 
         LineEntity entity = new LineEntity();
         entity.setName(req.getName());
-        entity.setStaffId(req.getStaffId());
         entity.setFirstDepartureTime(req.getFirstDepartureTime());
         entity.setFrequency(req.getFrequency());
         entity.setStatus(req.getStatus());
@@ -75,10 +79,15 @@ public class LineMapper {
     private LineEntity.StationInLine toStationInLineEntity(StationInLineReq req) {
         LineEntity.StationInLine entity = new LineEntity.StationInLine();
         entity.setStationId(req.getStationId());
-        entity.setStationName(req.getStationName());
         entity.setSequence(req.getSequence());
         entity.setTimeFromPreviousStation(req.getTimeFromPreviousStation());
-        entity.setLocation(req.getLocation());
+
+        StationEntity station = stationRepository.findById(req.getStationId())
+                .orElseThrow(() -> new RuntimeException("Station not found with id: " + req.getStationId()));
+
+        entity.setStationName(station.getName());
+        entity.setLocation(station.getLocation());
+
         return entity;
     }
 }

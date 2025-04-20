@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/station")
+@RequestMapping("/v1/stations")
 @RequiredArgsConstructor
 public class StationController {
     private final StationService stationService;
@@ -30,9 +30,9 @@ public class StationController {
 
     @GetMapping
     public ResponseEntity<BaseRes<List<StationRes>>> getAllStations() {
-        List<StationEntity> stations = stationService.getAllStations();
-        List<StationRes> stationDtoList = stationMapper.toDtoList(stations);
-        BaseRes<List<StationRes>> response = new BaseRes<>(HttpStatus.OK.value(), "Station list retrieved successfully", stationDtoList);
+        List<StationRes> stations = stationService.getAllStations();
+        BaseRes<List<StationRes>> response = new BaseRes<>(
+                HttpStatus.OK.value(), "Station list retrieved successfully", stations);
         return ResponseEntity.ok(response);
     }
 
@@ -40,35 +40,49 @@ public class StationController {
     public ResponseEntity<BaseRes<StationRes>> getStationById(@PathVariable String id) {
         return stationService.getStationById(id)
                 .map(station -> {
-                    StationRes stationDto = stationMapper.toDto(station);
-                    BaseRes<StationRes> response = new BaseRes<>(HttpStatus.OK.value(), "Station retrieved successfully", stationDto);
+                    BaseRes<StationRes> response = new BaseRes<>(
+                            HttpStatus.OK.value(), "Station retrieved successfully", station);
                     return ResponseEntity.ok(response);
                 })
                 .orElseGet(() -> {
-                    BaseRes<StationRes> response = new BaseRes<>(HttpStatus.NOT_FOUND.value(), "Station not found", null);
+                    BaseRes<StationRes> response = new BaseRes<>(
+                            HttpStatus.NOT_FOUND.value(), "Station not found", null);
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                 });
     }
 
     @PostMapping
     public ResponseEntity<BaseRes<StationRes>> createStation(@Valid @RequestBody StationReq stationReq) {
-        StationEntity station = stationMapper.toEntity(stationReq);
-        StationEntity createdStation = stationService.createStation(station);
-        StationRes stationDto = stationMapper.toDto(createdStation);
-        BaseRes<StationRes> response = new BaseRes<>(HttpStatus.CREATED.value(), "Station created successfully", stationDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        try {
+            StationEntity station = stationMapper.toEntity(stationReq);
+            StationRes createdStation = stationService.createStation(station);
+            BaseRes<StationRes> response = new BaseRes<>(
+                    HttpStatus.CREATED.value(), "Station created successfully", createdStation);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (IllegalArgumentException e) {
+            BaseRes<StationRes> response = new BaseRes<>(
+                    HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BaseRes<StationRes>> updateStation(@PathVariable String id, @Valid @RequestBody StationReq stationReq) {
+    public ResponseEntity<BaseRes<StationRes>> updateStation(
+            @PathVariable String id,
+            @Valid @RequestBody StationReq stationReq) {
         try {
             StationEntity station = stationMapper.toEntity(stationReq);
-            StationEntity updatedStation = stationService.updateStation(id, station);
-            StationRes stationDto = stationMapper.toDto(updatedStation);
-            BaseRes<StationRes> response = new BaseRes<>(HttpStatus.OK.value(), "Station updated successfully", stationDto);
+            StationRes updatedStation = stationService.updateStation(id, station);
+            BaseRes<StationRes> response = new BaseRes<>(
+                    HttpStatus.OK.value(), "Station updated successfully", updatedStation);
             return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            BaseRes<StationRes> response = new BaseRes<>(
+                    HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         } catch (RuntimeException e) {
-            BaseRes<StationRes> response = new BaseRes<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+            BaseRes<StationRes> response = new BaseRes<>(
+                    HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
@@ -76,11 +90,13 @@ public class StationController {
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseRes<Void>> deleteStation(@PathVariable String id) {
         if (stationService.getStationById(id).isEmpty()) {
-            BaseRes<Void> response = new BaseRes<>(HttpStatus.NOT_FOUND.value(), "Station not found", null);
+            BaseRes<Void> response = new BaseRes<>(
+                    HttpStatus.NOT_FOUND.value(), "Station not found", null);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         stationService.deleteStation(id);
-        BaseRes<Void> response = new BaseRes<>(HttpStatus.OK.value(), "Station deleted successfully", null);
+        BaseRes<Void> response = new BaseRes<>(
+                HttpStatus.OK.value(), "Station deleted successfully", null);
         return ResponseEntity.ok(response);
     }
 }
