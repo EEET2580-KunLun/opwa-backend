@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/staff")
+@RequestMapping("/v1/staff")
 @RequiredArgsConstructor
 public class StaffController {
     private final StaffService staffService;
