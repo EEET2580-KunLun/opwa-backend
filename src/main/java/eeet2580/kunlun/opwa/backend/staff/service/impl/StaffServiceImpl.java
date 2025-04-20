@@ -54,18 +54,39 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public String uploadAvatar(MultipartFile file, String email) throws IOException {
-        var staffOptional = getStaffByEmail(email);
+    public String uploadAvatar(MultipartFile file, String staffId, String currentUserEmail) throws IOException {
+        var targetStaff = staffRepository.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Staff not found with id: " + staffId));
 
-        if (staffOptional.isEmpty()) {
-            throw new RuntimeException("Staff not found with email: " + email);
-        }
+        checkAvatarUpdatePermission(currentUserEmail, staffId);
 
-        StaffEntity staff = staffOptional.get();
-        String avatarUrl = pictureService.uploadPicture(file, staff.getId());
-        staff.setAvatarUrl(avatarUrl);
-        updateStaff(staff.getId(), staff);
+        String avatarUrl = pictureService.uploadPicture(file, staffId);
+        targetStaff.setAvatarUrl(avatarUrl);
+        updateStaff(staffId, targetStaff);
 
         return avatarUrl;
+    }
+
+    @Override
+    public void removeAvatar(String staffId, String currentUserEmail) {
+        var targetStaff = staffRepository.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Staff not found with id: " + staffId));
+
+        checkAvatarUpdatePermission(currentUserEmail, staffId);
+
+        targetStaff.setAvatarUrl(null);
+        updateStaff(staffId, targetStaff);
+    }
+
+    private void checkAvatarUpdatePermission(String currentUserEmail, String targetStaffId) {
+        var currentStaff = staffRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new SecurityException("Current user not found"));
+
+        boolean isAdmin = "ADMIN".equals(currentStaff.getRole());
+        boolean isSelfUpdate = currentStaff.getId().equals(targetStaffId);
+
+        if (!isAdmin && !isSelfUpdate) {
+            throw new SecurityException("Insufficient permissions to update this staff's avatar");
+        }
     }
 }

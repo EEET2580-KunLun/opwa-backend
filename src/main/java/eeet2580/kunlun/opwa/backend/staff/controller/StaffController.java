@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/staff")
+@RequestMapping("/v1/staffs")
 @RequiredArgsConstructor
 public class StaffController {
     private final StaffService staffService;
@@ -106,13 +106,14 @@ public class StaffController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/avatar")
+    @PostMapping("/{staffId}/avatar")
     public ResponseEntity<BaseRes<UploadAvatarRes>> uploadAvatar(
+            @PathVariable String staffId,
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
         try {
-            String email = authentication.getName();
-            String avatarUrl = staffService.uploadAvatar(file, email);
+            String currentUserEmail = authentication.getName();
+            String avatarUrl = staffService.uploadAvatar(file, staffId, currentUserEmail);
 
             UploadAvatarRes avatarUrlRes = new UploadAvatarRes(avatarUrl);
             BaseRes<UploadAvatarRes> response = new BaseRes<>(
@@ -122,8 +123,34 @@ public class StaffController {
             BaseRes<UploadAvatarRes> response = new BaseRes<>(
                     HttpStatus.BAD_REQUEST.value(), "Failed to upload avatar: " + e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (SecurityException e) {
+            BaseRes<UploadAvatarRes> response = new BaseRes<>(
+                    HttpStatus.FORBIDDEN.value(), e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         } catch (RuntimeException e) {
             BaseRes<UploadAvatarRes> response = new BaseRes<>(
+                    HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+    @DeleteMapping("/{staffId}/avatar")
+    public ResponseEntity<BaseRes<Void>> removeAvatar(
+            @PathVariable String staffId,
+            Authentication authentication) {
+        try {
+            String currentUserEmail = authentication.getName();
+            staffService.removeAvatar(staffId, currentUserEmail);
+
+            BaseRes<Void> response = new BaseRes<>(
+                    HttpStatus.OK.value(), "Avatar removed successfully", null);
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            BaseRes<Void> response = new BaseRes<>(
+                    HttpStatus.FORBIDDEN.value(), e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        } catch (RuntimeException e) {
+            BaseRes<Void> response = new BaseRes<>(
                     HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }

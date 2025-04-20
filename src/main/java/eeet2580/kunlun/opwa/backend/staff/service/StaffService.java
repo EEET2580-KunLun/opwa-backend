@@ -20,5 +20,7 @@ public interface StaffService {
 
     Optional<StaffEntity> getStaffByEmail(String email);
 
-    String uploadAvatar(MultipartFile file, String email) throws IOException;
+    String uploadAvatar(MultipartFile file, String staffId, String currentUserEmail) throws IOException;
+
+    void removeAvatar(String staffId, String currentUserEmail);
 }
