@@ -39,6 +39,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<BaseRes<TokenRes>> login(@Valid @RequestBody LoginReq req) {
+        System.out.println("Login request received: " + req.getEmail());
         TokenRes token = authService.login(req);
         BaseRes<TokenRes> response = new BaseRes<>(HttpStatus.OK.value(), "Login successful", token);
         return ResponseEntity.ok(response);

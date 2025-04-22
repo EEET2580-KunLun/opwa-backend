@@ -81,6 +81,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
     }
 
+    // Validates user credentials
     @Override
     public TokenRes login(LoginReq req) {
         try {
@@ -109,6 +110,7 @@ public class AuthServiceImpl implements AuthService {
         return buildTokenResFromStaff(staff);
     }
 
+    // Generate JWT tokens and create refresh tokens
     private TokenRes buildTokenResFromStaff(StaffEntity staff) {
         String accessToken = jwtTokenUtil.generateToken(staff);
 
