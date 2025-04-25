@@ -20,10 +20,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -41,15 +43,16 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    // Define how HTTP requests should be secured
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).ignoringRequestMatchers("/v1/auth/login")) // enable the CSRF protection and store the CSRF token in a cookie
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/oauth2/**", "/login/**", "/v1/auth/login").permitAll()
                         .anyRequest().authenticated())
-                .oauth2Login(oauth2 -> oauth2
+                .oauth2Login(oauth2 -> oauth2 // Sign in with Google
                         .successHandler(oAuth2AuthenticationSuccessHandler())
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService())))
@@ -66,6 +69,11 @@ public class SecurityConfig {
         return new CustomAuthenticationEntryPoint();
     }
 
+    /**
+     * Extract the authenticated user as a StaffEntity
+     * Generate a JWT token
+     * Construct a redirect URL to the frontend
+     * */
     @Bean
     public OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
         return new OAuth2AuthenticationSuccessHandler(jwtTokenUtil);
@@ -89,7 +97,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(environment.getProperty("app.frontend.base-url")));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

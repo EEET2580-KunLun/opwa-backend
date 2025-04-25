@@ -7,6 +7,8 @@ import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
 import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,12 +22,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
+
+    @GetMapping("/validate")
+    public ResponseEntity<?> validateToken() {
+        // The mere fact that this endpoint returns 200 OK means the token is valid
+        // because the JwtRequestFilter will have already checked the token
+        return ResponseEntity.ok(Map.of("valid", true));
+    }
 
     @PostMapping("/register")
     public ResponseEntity<BaseRes<StaffEntity>> register(
@@ -83,5 +94,20 @@ public class AuthController {
     @PreAuthorize("hasRole('TICKET_AGENT')")
     public ResponseEntity<String> ticketAgentEndpoint() {
         return ResponseEntity.ok("Ticket Agent access");
+    }
+
+    // Modify later
+    // Clear the cookie when logging out
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        // Create a cookie with the same name but zero max age to delete it
+        Cookie cookie = new Cookie("jwt_token", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 }

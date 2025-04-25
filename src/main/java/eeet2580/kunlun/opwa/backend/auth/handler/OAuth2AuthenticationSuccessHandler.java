@@ -3,6 +3,7 @@ package eeet2580.kunlun.opwa.backend.auth.handler;
 import eeet2580.kunlun.opwa.backend.auth.config.JwtTokenUtil;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,16 +33,26 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         if (authentication.getPrincipal() instanceof StaffEntity) {
             staff = (StaffEntity) authentication.getPrincipal();
         } else {
-            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
-            OAuth2User oAuth2User = oauthToken.getPrincipal();
+//            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+//            OAuth2User oAuth2User = oauthToken.getPrincipal();
             throw new ServletException("Unable to process OAuth2 login: principal is not a StaffEntity");
         }
         String token = jwtTokenUtil.generateToken(staff);
 
-        String redirectUrl = UriComponentsBuilder.fromUriString(frontendBaseUrl + "/oauth2/callback")
-                .queryParam("token", token)
-                .build().toUriString();
+        // Set JWT in http-only cookie
+        Cookie cookie = new Cookie("jwt_token", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // only works with HTTPS
+        cookie.setPath("/");
+        cookie.setMaxAge((int) (jwtTokenUtil.getExpiration() / 1000));
+        response.addCookie(cookie);
 
+//        String redirectUrl = UriComponentsBuilder.fromUriString(frontendBaseUrl + "/oauth2/callback")
+//                .queryParam("token", token)
+//                .build().toUriString();
+
+        // Redirect to frontend after successful authentication
+        String redirectUrl = frontendBaseUrl + "/dashboard";
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 }

@@ -29,20 +29,24 @@ public class JwtTokenUtil {
     @Value("${jwt.refresh-expiration:604800000}")
     private Long refreshExpiration;
 
+    /**
+     * Use the Keys.hmacShaKeyFor() from the JJWT library to create a HMAC-SHA key
+     * */
     private SecretKey getSigningKey() {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    // Generate tokens for staff members
     public String generateToken(StaffEntity staff) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", staff.getRole().name());
         return Jwts.builder()
-                .claims(claims)
-                .subject(staff.getEmail())
+                .claims(claims) // claims store info about authenticated user
+                .subject(staff.getEmail()) // set to the staff member's email address
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSigningKey())
+                .signWith(getSigningKey()) // create signature
                 .compact();
     }
 
