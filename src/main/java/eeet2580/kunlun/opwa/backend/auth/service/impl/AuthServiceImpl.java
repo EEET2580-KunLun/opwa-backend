@@ -4,7 +4,9 @@ import eeet2580.kunlun.opwa.backend.auth.config.JwtTokenUtil;
 import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginReq;
 import eeet2580.kunlun.opwa.backend.auth.dto.resp.TokenRes;
 import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
+import eeet2580.kunlun.opwa.backend.staff.dto.mapper.StaffMapper;
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
+import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import eeet2580.kunlun.opwa.backend.staff.repository.StaffRepository;
 import io.jsonwebtoken.security.WeakKeyException;
@@ -113,15 +115,21 @@ public class AuthServiceImpl implements AuthService {
     // Generate JWT tokens and create refresh tokens
     private TokenRes buildTokenResFromStaff(StaffEntity staff) {
         String accessToken = jwtTokenUtil.generateToken(staff);
-
         String refreshToken = jwtTokenUtil.generateRefreshToken();
-        Date refreshTokenExpiry = jwtTokenUtil.getRefreshTokenExpiry();
 
+        StaffMapper staffMapper = new StaffMapper();
+        StaffRes staffRes = staffMapper.toDto(staff);
+
+        // Update refresh token in database
+        Date refreshTokenExpiry = jwtTokenUtil.getRefreshTokenExpiry();
         staff.setRefreshToken(refreshToken);
         staff.setRefreshTokenExpiry(refreshTokenExpiry);
         staffRepository.save(staff);
 
+        // Create token response with the tokens for cookie creation
+        // but not for including in the response body sent to client
         TokenRes tokenResponse = new TokenRes();
+        tokenResponse.setStaff(staffRes);
         tokenResponse.setAccessToken(accessToken);
         tokenResponse.setRefreshToken(refreshToken);
         tokenResponse.setExpiresIn(jwtTokenUtil.getExpiration() / 1000);

@@ -7,6 +7,7 @@ import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
 import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
+import eeet2580.kunlun.opwa.backend.auth.config.JwtTokenUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -30,6 +31,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtTokenUtil jwtTokenUtil;
 
     @GetMapping("/validate")
     public ResponseEntity<?> validateToken() {
@@ -49,11 +51,34 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<BaseRes<TokenRes>> login(@Valid @RequestBody LoginReq req) {
+    public ResponseEntity<BaseRes<TokenRes>> login(@Valid @RequestBody LoginReq req, HttpServletResponse response) {
         System.out.println("Login request received: " + req.getEmail());
         TokenRes token = authService.login(req);
-        BaseRes<TokenRes> response = new BaseRes<>(HttpStatus.OK.value(), "Login successful", token);
-        return ResponseEntity.ok(response);
+
+        // Set JWT in http-only cookie
+        Cookie cookie = new Cookie("jwt_token", token.getAccessToken());
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge((int) (token.getExpiresIn()));
+        response.addCookie(cookie);
+
+        // Set refresh token in http-only cookie
+        Cookie refreshCookie = new Cookie("refresh_token", token.getRefreshToken());
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge((int) (jwtTokenUtil.getRefreshTokenExpiry().getTime() - System.currentTimeMillis()) / 1000);
+        response.addCookie(refreshCookie);
+
+        // Create a response object without the sensitive token information
+        TokenRes safeResponse = new TokenRes();
+        safeResponse.setStaff(token.getStaff());
+        safeResponse.setExpiresIn(token.getExpiresIn());
+
+        // Return proper BaseRes with safe response
+        BaseRes<TokenRes> responseBody = new BaseRes<>(HttpStatus.OK.value(), "Login successful", safeResponse);
+        return ResponseEntity.ok(responseBody);
     }
 
     @PostMapping("/refresh-token")
