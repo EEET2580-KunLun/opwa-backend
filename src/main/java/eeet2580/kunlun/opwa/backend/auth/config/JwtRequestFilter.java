@@ -35,17 +35,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             throws ServletException, IOException {
 
+        final String requestPath = request.getServletPath();
         String jwtToken = null;
 
-        final String requestTokenHeader = request.getHeader("Authorization");
-
-        // Check the auth header first
-        if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
-            jwtToken = requestTokenHeader.substring(7);
+        // Skip token validation for authentication endpoints
+        if (requestPath.contains("/refresh-token") || requestPath.contains("/login") || requestPath.contains("/register")) {
+            chain.doFilter(request, response);
+            return;
         }
 
         // If not found in header, check cookies
-        if (jwtToken == null && request.getCookies() != null) {
+        if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("jwt_token".equals(cookie.getName())) {
                     jwtToken = cookie.getValue();

@@ -1,9 +1,11 @@
 package eeet2580.kunlun.opwa.backend.auth.config;
 
+import eeet2580.kunlun.opwa.backend.auth.dto.resp.TokenRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -75,5 +77,25 @@ public class JwtTokenUtil {
 
     public String getEmailFromToken(String token) {
         return getAllClaimsFromToken(token).getSubject();
+    }
+
+    // Set refresh/access token in http-only cookie
+    public Cookie getCookieFromToken(String type, TokenRes tokenRes) {
+        Cookie cookie;
+        switch (type) {
+            case "jwt_token" -> {
+                cookie = new Cookie(type, tokenRes.getAccessToken());
+                cookie.setMaxAge((int) (tokenRes.getExpiresIn()));
+            }
+            case "refresh_token" -> {
+                cookie = new Cookie(type, tokenRes.getRefreshToken());
+                cookie.setMaxAge((int) (getRefreshTokenExpiry().getTime() - System.currentTimeMillis()) / 1000);
+            }
+            default -> throw new IllegalArgumentException("Invalid cookie type: " + type);
+        }
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        return cookie;
     }
 }

@@ -16,7 +16,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -27,6 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Configuration
 @EnableWebSecurity
@@ -48,14 +48,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).ignoringRequestMatchers("/v1/auth/login")) // enable the CSRF protection and store the CSRF token in a cookie
+                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())) // enable the CSRF protection and store the CSRF token in a cookie
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/oauth2/**", "/login/**", "/v1/auth/login").permitAll()
+                        .requestMatchers("/api/auth/**", "/oauth2/**", "/login/**", "/v1/auth/login", "/csrf", "/v1/auth/refresh-token").permitAll()
                         .anyRequest().authenticated())
+
                 .oauth2Login(oauth2 -> oauth2 // Sign in with Google
                         .successHandler(oAuth2AuthenticationSuccessHandler())
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService())))
+
                 .httpBasic(Customizer.withDefaults())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint()))  // Add this line
                 .addFilterBefore(jwtRequestFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -63,6 +66,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     @Bean
     public CustomAuthenticationEntryPoint customAuthenticationEntryPoint() {
@@ -95,7 +99,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(environment.getProperty("app.frontend.base-url")));
+        configuration.setAllowedOrigins(List.of(Objects.requireNonNull(environment.getProperty("app.frontend.base-url"))));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
