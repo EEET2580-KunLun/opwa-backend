@@ -38,8 +38,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         final String requestPath = request.getServletPath();
         String jwtToken = null;
 
-        // Skip token validation for authentication endpoints
-        if (requestPath.contains("/refresh-token") || requestPath.contains("/login") || requestPath.contains("/register")) {
+// Skip token validation for authentication endpoints
+        if (requestPath.startsWith("/v1/auth/login") ||
+                requestPath.startsWith("/v1/auth/register") ||
+                requestPath.startsWith("/v1/auth/refresh-token")) {
+            logger.info("Skipping token validation for authentication path: " + requestPath);
             chain.doFilter(request, response);
             return;
         }
@@ -107,7 +110,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 //                // System.out.println("Unable to get JWT Token or JWT Token has expired");
 //            }
 //        }
-
 
 
         chain.doFilter(request, response);
