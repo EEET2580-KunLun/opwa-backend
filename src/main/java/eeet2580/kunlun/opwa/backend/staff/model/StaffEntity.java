@@ -44,6 +44,10 @@ public class StaffEntity implements OAuth2User {
     private String refreshToken;
     private Date refreshTokenExpiry;
 
+    // For ID verification
+    private String nationalIdFrontImage;
+    private String nationalIdBackImage;
+
     private Map<String, Object> attributes = new HashMap<>();
 
     @Override

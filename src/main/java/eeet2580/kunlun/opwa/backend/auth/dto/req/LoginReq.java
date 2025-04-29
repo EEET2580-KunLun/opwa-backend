@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+// Model class for login request
 @Data
 public class LoginReq {
     @NotBlank
