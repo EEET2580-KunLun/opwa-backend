@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())) // enable the CSRF protection and store the CSRF token in a cookie
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/oauth2/**", "/login/**", "/v1/auth/login", "/csrf", "/v1/auth/refresh-token").permitAll()
+                        .requestMatchers("/v1/auth/**", "/oauth2/**", "/login/**", "/csrf").permitAll()
                         .anyRequest().authenticated())
 
                 .oauth2Login(oauth2 -> oauth2 // Sign in with Google
@@ -77,7 +77,7 @@ public class SecurityConfig {
      * Extract the authenticated user as a StaffEntity
      * Generate a JWT token
      * Construct a redirect URL to the frontend
-     * */
+     */
     @Bean
     public OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
         return new OAuth2AuthenticationSuccessHandler(jwtTokenUtil);
