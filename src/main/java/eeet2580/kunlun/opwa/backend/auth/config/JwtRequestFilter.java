@@ -1,6 +1,8 @@
 package eeet2580.kunlun.opwa.backend.auth.config;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -15,6 +17,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.lang.NonNull;
 import java.io.IOException;
+import io.jsonwebtoken.security.SignatureException;
 import java.util.List;
 
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -36,9 +39,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         final String requestPath = request.getServletPath();
-        String jwtToken = null;
 
-// Skip token validation for authentication endpoints
+        // Skip token validation for authentication endpoints
         if (requestPath.startsWith("/v1/auth/login") ||
                 requestPath.startsWith("/v1/auth/register") ||
                 requestPath.startsWith("/v1/auth/refresh-token")) {
@@ -47,39 +49,30 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             return;
         }
 
-        // If not found in header, check cookies
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("jwt_token".equals(cookie.getName())) {
-                    jwtToken = cookie.getValue();
-                    break;
+        // Extract JWT from cookies by try-catch to debug
+        try {
+            String jwtToken = extractCookieValue(request, "jwt_token");
+
+            if(jwtToken != null){
+                try{
+                    // Process the Jwt token
+                    processJwtToken(jwtToken, request);
+                    logger.debug("Successfully processed jwt token");
+                } catch (ExpiredJwtException e){
+                    logger.debug("Jwt token expired: " + e.getMessage());
+                    handleExpiredToken(request, response, e);
+                } catch (SignatureException e){
+                    logger.error("Invalid JWT signature: " + e.getMessage());
+                } catch (MalformedJwtException e){
+                    logger.error("Invalid JWT token: " + e.getMessage());
+                } catch (Exception e){
+                    logger.error("Error processing JWT token: " + e.getMessage());
                 }
+            }else{
+                logger.debug("No JWT token found in request");
             }
-        }
-
-        // If the token is found
-        if (jwtToken != null) {
-            try {
-                Claims claims = jwtTokenUtil.getAllClaimsFromToken(jwtToken);
-                String email = claims.getSubject();
-                String role = claims.get("role", String.class);
-
-                if (email != null && role != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
-
-                    if (!jwtTokenUtil.isTokenExpired(jwtToken)) {
-                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-
-                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                    }
-                }
-            } catch (Exception e) {
-                logger.error("Could not set user authentication in security context", e);
-            }
+        }catch (Exception e){
+            logger.error("Failed to process authentication: " + e.getMessage());
         }
 
 //        if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) { // for using the Bearer token in the authorization header
@@ -113,5 +106,51 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 
         chain.doFilter(request, response);
+    }
+
+    private void processJwtToken(String jwtToken, HttpServletRequest request) throws Exception {
+
+        Claims claims = jwtTokenUtil.getAllClaimsFromToken(jwtToken);
+        String email = claims.getSubject();
+        String role = claims.get("role", String.class);
+
+        logger.debug("Processing JWT token for user: " + email + " with role: " + role);
+
+        if (email != null && role != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // Check if the token is expired
+            if(jwtTokenUtil.isTokenExpired(jwtToken)){
+                throw new ExpiredJwtException(null, null, "Token expired");
+            }
+
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
+
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            logger.debug("Successfully set authentication for user: " + email);
+        }
+    }
+
+    // The frontend will handle the logic of the refresh process
+    private void handleExpiredToken(HttpServletRequest request, HttpServletResponse response, ExpiredJwtException e) {
+        response.setHeader("X-Token-Expired", "true");
+        logger.debug("Token expired, set X-Token-Expired header");
+    }
+
+    // Extract cookie value by name
+    private String extractCookieValue(HttpServletRequest request, String cookieName) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookieName.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

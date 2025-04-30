@@ -20,7 +20,8 @@ firebase:
 
 jwt:
     secret: ${JWT_SECRET}
-    expiration: ${JWT_EXPIRATION}
+#    expiration: ${JWT_EXPIRATION}
+    expiration: 30000
     refresh-expiration: ${JWT_REFRESH_EXPIRATION}
 
 server:
