@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,20 +35,29 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<BaseRes<String>> handleAccessDeniedException(AccessDeniedException ex) {
-        BaseRes<String> response = new BaseRes<>(HttpStatus.FORBIDDEN.value(), "Access denied: insufficient permissions", null);
+    public ResponseEntity<BaseRes<Void>> handleAccessDeniedException(AccessDeniedException ex) {
+        BaseRes<Void> response = new BaseRes<>(HttpStatus.FORBIDDEN.value(), "Access denied: insufficient permissions", null);
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<BaseRes<String>> handleAuthenticationException(AuthenticationException ex) {
-        BaseRes<String> response = new BaseRes<>(HttpStatus.UNAUTHORIZED.value(), "Authentication failed", null);
+    public ResponseEntity<BaseRes<Void>> handleAuthenticationException(AuthenticationException ex) {
+        BaseRes<Void> response = new BaseRes<>(HttpStatus.UNAUTHORIZED.value(), "Authentication failed", null);
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<BaseRes<String>> handleGeneralException(Exception ex) {
-        BaseRes<String> response = new BaseRes<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", null);
+    public ResponseEntity<BaseRes<Void>> handleGeneralException(Exception ex) {
+        BaseRes<Void> response = new BaseRes<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", null);
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<BaseRes<Void>> handleMissingServletRequestPartException(MissingServletRequestPartException ex) {
+        BaseRes<Void> response = new BaseRes<>(
+                HttpStatus.BAD_REQUEST.value(),
+                "Missing required file: " + ex.getRequestPartName(),
+                null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }

@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())) // enable the CSRF protection and store the CSRF token in a cookie
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v1/auth/**", "/oauth2/**", "/login/**", "/csrf").permitAll()
+                        .requestMatchers("/v1/auth/**", "/oauth2/**", "/login/**", "/v1/csrf").permitAll()
                         .anyRequest().authenticated())
 
                 .oauth2Login(oauth2 -> oauth2 // Sign in with Google

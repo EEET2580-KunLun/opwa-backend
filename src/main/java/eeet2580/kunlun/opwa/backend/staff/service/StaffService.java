@@ -1,5 +1,6 @@
 package eeet2580.kunlun.opwa.backend.staff.service;
 
+import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadIdRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,4 +24,17 @@ public interface StaffService {
     String uploadAvatar(MultipartFile file, String staffId, String currentUserEmail) throws IOException;
 
     void removeAvatar(String staffId, String currentUserEmail);
+
+    StaffEntity createStaffWithImages(StaffEntity staff,
+                                      MultipartFile profilePhoto,
+                                      MultipartFile frontIdImage,
+                                      MultipartFile backIdImage) throws IOException;
+
+    UploadIdRes uploadIdPictures(String staffId,
+                                 String currentUserEmail,
+                                 MultipartFile frontIdImage,
+                                 MultipartFile backIdImage) throws IOException;
+
+    void removeIdPictures(String staffId,
+                          String currentUserEmail);
 }

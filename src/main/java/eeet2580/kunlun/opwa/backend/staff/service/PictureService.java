@@ -14,4 +14,6 @@ public interface PictureService {
      * @throws IOException If file cannot be processed
      */
     String uploadPicture(MultipartFile file, String staffId) throws IOException;
+
+    void removePicture(String url);
 }
