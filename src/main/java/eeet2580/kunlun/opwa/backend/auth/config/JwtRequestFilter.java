@@ -67,35 +67,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             logger.error("Failed to process authentication: " + e.getMessage());
         }
 
-//        if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) { // for using the Bearer token in the authorization header
-//            jwtToken = requestTokenHeader.substring(7);
-//            try {
-//                Claims claims = jwtTokenUtil.getAllClaimsFromToken(jwtToken);
-//                email = claims.getSubject();
-//                String role = claims.get("role", String.class);
-//
-//                if (email != null && role != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-//                    UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
-//
-//                    if (!jwtTokenUtil.isTokenExpired(jwtToken)) {
-//                        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-//                                userDetails,
-//                                null,
-//                                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-//
-//                        usernamePasswordAuthenticationToken
-//                                .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//
-//                        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-//                    }
-//                }
-//
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                // System.out.println("Unable to get JWT Token or JWT Token has expired");
-//            }
-//        }
-
         chain.doFilter(request, response);
     }
 
