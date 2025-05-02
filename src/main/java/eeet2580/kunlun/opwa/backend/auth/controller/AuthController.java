@@ -1,12 +1,12 @@
 package eeet2580.kunlun.opwa.backend.auth.controller;
 
+import eeet2580.kunlun.opwa.backend.auth.config.JwtTokenUtil;
 import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginReq;
 import eeet2580.kunlun.opwa.backend.auth.dto.resp.TokenRes;
 import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
 import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
-import eeet2580.kunlun.opwa.backend.auth.config.JwtTokenUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -66,22 +66,6 @@ public class AuthController {
         BaseRes<TokenRes> responseBody = new BaseRes<>(HttpStatus.OK.value(), "Login successful", safeResponse);
         return ResponseEntity.ok(responseBody);
     }
-
-
-//    @PostMapping("/refresh-token")
-//    public ResponseEntity<BaseRes<TokenRes>> refreshToken(
-//            @Valid @RequestBody RefreshTokenReq req) {
-//        try {
-//            TokenRes tokens = authService.refreshToken(req.getRefreshToken());
-//            BaseRes<TokenRes> response = new BaseRes<>(
-//                    HttpStatus.OK.value(), "Token refreshed successfully", tokens);
-//            return ResponseEntity.ok(response);
-//        } catch (BadCredentialsException e) {
-//            BaseRes<TokenRes> response = new BaseRes<>(
-//                    HttpStatus.UNAUTHORIZED.value(), e.getMessage(), null);
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-//        }
-//    }
 
     @PostMapping("/refresh-token")
     public ResponseEntity<BaseRes<TokenRes>> refreshToken(HttpServletRequest request, HttpServletResponse response) {

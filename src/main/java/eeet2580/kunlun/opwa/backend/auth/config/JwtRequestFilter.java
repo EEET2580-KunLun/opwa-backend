@@ -3,11 +3,13 @@ package eeet2580.kunlun.opwa.backend.auth.config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,9 +17,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.lang.NonNull;
+
 import java.io.IOException;
-import io.jsonwebtoken.security.SignatureException;
 import java.util.List;
 
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -40,38 +41,29 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         final String requestPath = request.getServletPath();
 
-        // Skip token validation for authentication endpoints
-        if (requestPath.startsWith("/v1/auth/login") ||
-                requestPath.startsWith("/v1/auth/register") ||
-                requestPath.startsWith("/v1/auth/refresh-token")) {
-            logger.info("Skipping token validation for authentication path: " + requestPath);
-            chain.doFilter(request, response);
-            return;
-        }
-
         // Extract JWT from cookies by try-catch to debug
         try {
             String jwtToken = extractCookieValue(request, "jwt_token");
 
-            if(jwtToken != null){
-                try{
+            if (jwtToken != null) {
+                try {
                     // Process the Jwt token
                     processJwtToken(jwtToken, request);
                     logger.debug("Successfully processed jwt token");
-                } catch (ExpiredJwtException e){
+                } catch (ExpiredJwtException e) {
                     logger.debug("Jwt token expired: " + e.getMessage());
                     handleExpiredToken(request, response, e);
-                } catch (SignatureException e){
+                } catch (SignatureException e) {
                     logger.error("Invalid JWT signature: " + e.getMessage());
-                } catch (MalformedJwtException e){
+                } catch (MalformedJwtException e) {
                     logger.error("Invalid JWT token: " + e.getMessage());
-                } catch (Exception e){
+                } catch (Exception e) {
                     logger.error("Error processing JWT token: " + e.getMessage());
                 }
-            }else{
+            } else {
                 logger.debug("No JWT token found in request");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("Failed to process authentication: " + e.getMessage());
         }
 
@@ -104,7 +96,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 //            }
 //        }
 
-
         chain.doFilter(request, response);
     }
 
@@ -118,7 +109,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         if (email != null && role != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // Check if the token is expired
-            if(jwtTokenUtil.isTokenExpired(jwtToken)){
+            if (jwtTokenUtil.isTokenExpired(jwtToken)) {
                 throw new ExpiredJwtException(null, null, "Token expired");
             }
 

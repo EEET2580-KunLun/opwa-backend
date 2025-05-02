@@ -27,5 +27,7 @@ public class StaffRes {
     private LocalDate dateOfBirth;
     private boolean employed;
     private String shift;
-    private String avatarUrl;
+    private String profilePicture;
+    private String nationalIdFrontPicture;
+    private String nationalIdBackPicture;
 }

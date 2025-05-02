@@ -15,4 +15,5 @@ public interface StaffRepository extends MongoRepository<StaffEntity, String> {
     Optional<StaffEntity> findByRoleAndEmail(StaffEntity.Role role, String email);
 
     Optional<StaffEntity> findByRefreshToken(String refreshToken);
+
 }

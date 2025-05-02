@@ -118,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = jwtTokenUtil.generateRefreshToken();
 
         StaffMapper staffMapper = new StaffMapper();
-        StaffRes staffRes = staffMapper.toDto(staff);
+        StaffRes staffRes = staffMapper.toRes(staff);
 
         // Update refresh token in database
         Date refreshTokenExpiry = jwtTokenUtil.getRefreshTokenExpiry();

@@ -1,5 +1,6 @@
 package eeet2580.kunlun.opwa.backend.staff.service.impl;
 
+import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadIdRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import eeet2580.kunlun.opwa.backend.staff.repository.StaffRepository;
 import eeet2580.kunlun.opwa.backend.staff.service.PictureService;
@@ -7,6 +8,7 @@ import eeet2580.kunlun.opwa.backend.staff.service.StaffService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -60,6 +62,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
+    @Transactional
     public StaffEntity createStaffWithImages(StaffEntity staff,
                                              MultipartFile profilePhoto,
                                              MultipartFile frontIdImage,
@@ -96,6 +99,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
+    @Transactional
     public StaffEntity updateStaff(String id, StaffEntity updatedStaff) {
         if (staffRepository.existsById(id)) {
             updatedStaff.setId(id);
@@ -105,6 +109,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
+    @Transactional
     public void deleteStaff(String id) {
         staffRepository.deleteById(id);
     }
@@ -115,6 +120,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
+    @Transactional
     public String uploadAvatar(MultipartFile file, String staffId, String currentUserEmail) throws IOException {
         StaffEntity staff = getStaffById(staffId)
                 .orElseThrow(() -> new RuntimeException("Staff not found"));
@@ -125,6 +131,7 @@ public class StaffServiceImpl implements StaffService {
         }
 
         String avatarUrl = pictureService.uploadPicture(file, staffId);
+        pictureService.removePicture(staff.getAvatarUrl());
         staff.setAvatarUrl(avatarUrl);
         staffRepository.save(staff);
 
@@ -132,6 +139,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
+    @Transactional
     public void removeAvatar(String staffId, String currentUserEmail) {
         var targetStaff = staffRepository.findById(staffId)
                 .orElseThrow(() -> new RuntimeException("Staff not found with id: " + staffId));
@@ -141,8 +149,65 @@ public class StaffServiceImpl implements StaffService {
             throw new SecurityException("You don't have permission to modify this staff member");
         }
 
+        pictureService.removePicture(targetStaff.getAvatarUrl());
         targetStaff.setAvatarUrl(null);
-        updateStaff(staffId, targetStaff);
+        staffRepository.save(targetStaff);
+    }
+
+    @Override
+    @Transactional
+    public UploadIdRes uploadIdPictures(String staffId,
+                                        String currentUserEmail,
+                                        MultipartFile frontIdImage,
+                                        MultipartFile backIdImage) {
+
+        var targetStaff = staffRepository.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Staff not found with id: " + staffId));
+
+        if (!canModifyStaff(targetStaff, currentUserEmail)) {
+            throw new SecurityException("You don't have permission to modify this staff member");
+        }
+
+        try {
+            // Validate file sizes
+            validateFileSize(frontIdImage, "Front ID image");
+            validateFileSize(backIdImage, "Back ID image");
+
+            pictureService.removePicture(targetStaff.getNationalIdFrontImage());
+            pictureService.removePicture(targetStaff.getNationalIdBackImage());
+
+            String frontIdUrl = pictureService.uploadPicture(frontIdImage, targetStaff.getId());
+            String backIdUrl = pictureService.uploadPicture(backIdImage, targetStaff.getId());
+
+            targetStaff.setNationalIdFrontImage(frontIdUrl);
+            targetStaff.setNationalIdBackImage(backIdUrl);
+
+            // Save with image URLs
+            staffRepository.save(targetStaff);
+
+            return new UploadIdRes(frontIdUrl, backIdUrl);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process images during staff creation", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeIdPictures(String staffId,
+                                 String currentUserEmail) {
+
+        var targetStaff = staffRepository.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Staff not found with id: " + staffId));
+
+        if (!canModifyStaff(targetStaff, currentUserEmail)) {
+            throw new SecurityException("You don't have permission to modify this staff member");
+        }
+
+        pictureService.removePicture(targetStaff.getNationalIdFrontImage());
+        pictureService.removePicture(targetStaff.getNationalIdBackImage());
+
+        targetStaff.setNationalIdFrontImage(null);
+        targetStaff.setNationalIdBackImage(null);
     }
 
     private void validateFileSize(MultipartFile file, String fileType) {
@@ -167,7 +232,7 @@ public class StaffServiceImpl implements StaffService {
      * A staff member can modify their own data
      * Admins and Master Admins can modify any staff member's data
      * Other roles have restrictions
-     * */
+     */
     private boolean canModifyStaff(StaffEntity staff, String currentUserEmail) {
         // Admin or the staff member themselves can modify
         return currentUserEmail.equals(staff.getEmail()) ||
