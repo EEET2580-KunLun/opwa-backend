@@ -66,7 +66,7 @@ public class StaffServiceImpl implements StaffService {
     public StaffEntity createStaffWithImages(StaffEntity staff,
                                              MultipartFile profilePhoto,
                                              MultipartFile frontIdImage,
-                                             MultipartFile backIdImage) {
+                                             MultipartFile backIdImage) throws IOException {
         try {
             // Validate file sizes
             validateFileSize(frontIdImage, "Front ID image");
@@ -159,7 +159,7 @@ public class StaffServiceImpl implements StaffService {
     public UploadIdRes uploadIdPictures(String staffId,
                                         String currentUserEmail,
                                         MultipartFile frontIdImage,
-                                        MultipartFile backIdImage) {
+                                        MultipartFile backIdImage) throws IOException {
 
         var targetStaff = staffRepository.findById(staffId)
                 .orElseThrow(() -> new RuntimeException("Staff not found with id: " + staffId));

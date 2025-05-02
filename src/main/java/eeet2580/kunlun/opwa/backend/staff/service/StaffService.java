@@ -13,7 +13,7 @@ public interface StaffService {
 
     Optional<StaffEntity> getStaffById(String id);
 
-    StaffEntity createStaff(StaffEntity staff); // use the createStaffWithImages instead
+    StaffEntity createStaff(StaffEntity staff);
 
     StaffEntity updateStaff(String id, StaffEntity updatedStaff);
 
@@ -28,12 +28,12 @@ public interface StaffService {
     StaffEntity createStaffWithImages(StaffEntity staff,
                                       MultipartFile profilePhoto,
                                       MultipartFile frontIdImage,
-                                      MultipartFile backIdImage);
+                                      MultipartFile backIdImage) throws IOException;
 
     UploadIdRes uploadIdPictures(String staffId,
                                  String currentUserEmail,
                                  MultipartFile frontIdImage,
-                                 MultipartFile backIdImage);
+                                 MultipartFile backIdImage) throws IOException;
 
     void removeIdPictures(String staffId,
                           String currentUserEmail);
