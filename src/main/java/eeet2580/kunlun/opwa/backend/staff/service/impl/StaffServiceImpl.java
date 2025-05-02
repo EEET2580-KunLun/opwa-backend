@@ -216,18 +216,6 @@ public class StaffServiceImpl implements StaffService {
         }
     }
 
-//    private void checkAvatarUpdatePermission(String currentUserEmail, String targetStaffId) {
-//        var currentStaff = staffRepository.findByEmail(currentUserEmail)
-//                .orElseThrow(() -> new SecurityException("Current user not found"));
-//
-//        boolean isAdmin = "ADMIN".equals(currentStaff.getRole());
-//        boolean isSelfUpdate = currentStaff.getId().equals(targetStaffId);
-//
-//        if (!isAdmin && !isSelfUpdate) {
-//            throw new SecurityException("Insufficient permissions to update this staff's avatar");
-//        }
-//    }
-
     /**
      * A staff member can modify their own data
      * Admins and Master Admins can modify any staff member's data
