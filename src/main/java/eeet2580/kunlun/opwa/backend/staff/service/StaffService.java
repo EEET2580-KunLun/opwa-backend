@@ -12,7 +12,7 @@ public interface StaffService {
 
     Optional<StaffEntity> getStaffById(String id);
 
-    StaffEntity createStaff(StaffEntity staff);
+    StaffEntity createStaff(StaffEntity staff); // use the createStaffWithImages instead
 
     StaffEntity updateStaff(String id, StaffEntity updatedStaff);
 
@@ -23,4 +23,9 @@ public interface StaffService {
     String uploadAvatar(MultipartFile file, String staffId, String currentUserEmail) throws IOException;
 
     void removeAvatar(String staffId, String currentUserEmail);
+
+    StaffEntity createStaffWithImages(StaffEntity staff,
+                                      MultipartFile profilePhoto,
+                                      MultipartFile frontIdImage,
+                                      MultipartFile backIdImage);
 }

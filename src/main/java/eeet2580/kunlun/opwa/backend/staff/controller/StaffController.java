@@ -2,6 +2,7 @@ package eeet2580.kunlun.opwa.backend.staff.controller;
 
 import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.mapper.StaffMapper;
+import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.InviteLinkRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadAvatarRes;
@@ -9,20 +10,14 @@ import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import eeet2580.kunlun.opwa.backend.staff.service.StaffInviteService;
 import eeet2580.kunlun.opwa.backend.staff.service.StaffService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -58,9 +53,33 @@ public class StaffController {
                 });
     }
 
-    @PostMapping
-    public ResponseEntity<BaseRes<StaffRes>> createStaff(@RequestBody StaffEntity staff) {
-        StaffEntity createdStaff = staffService.createStaff(staff);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BaseRes<StaffRes>> createStaff(
+            @ModelAttribute @Valid StaffReq request,
+            @RequestPart(value = "profilePhoto", required = false) MultipartFile profilePhoto,
+            @RequestPart(value = "frontIdImage", required = true) MultipartFile frontIdImage,
+            @RequestPart(value = "backIdImage", required = true) MultipartFile backIdImage) {
+
+        // Create StaffEntity from the request
+        StaffEntity staff = new StaffEntity();
+        staff.setEmail(request.getEmail());
+        staff.setUsername(request.getUsername());
+        staff.setPassword(request.getPassword());
+        staff.setFirstName(request.getFirstName());
+        staff.setMiddleName(request.getMiddleName());
+        staff.setLastName(request.getLastName());
+        staff.setNationalId(request.getNationalId());
+        staff.setRole(request.getRole());
+        staff.setResidenceAddressEntity(request.getAddress());
+        staff.setPhoneNumber(request.getPhoneNumber());
+        staff.setDateOfBirth(request.getDateOfBirth());
+        staff.setEmployed(request.isEmployed());
+        staff.setShift(request.getShift());
+
+        // Create staff with images
+        //TODO: the createStaffWithImages has not been implemented in the staffServiceImpl yet
+        StaffEntity createdStaff = staffService.createStaffWithImages(
+                staff, profilePhoto, frontIdImage, backIdImage);
         StaffRes staffDto = staffMapper.toDto(createdStaff);
         BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.CREATED.value(), "Staff created successfully", staffDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
