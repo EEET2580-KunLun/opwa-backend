@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+    <h2>WebSocket Client</h2>
+
+    <label for="token">JWT Token:</label><br />
+    <input id="token" type="text" style="width: 100%;" /><br /><br />
+
+    <button onclick="connect()">Connect</button>
+    <button onclick="disconnect()">Disconnect</button>
+
+    <div id="output" style="margin-top: 20px;"></div>
+
+    <script>
+        let stompClient = null;
+
+        function connect() {
+            const token = document.getElementById("token").value;
+            const socket = new SockJS("http://localhost:8082/ws");
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect(
+                { Authorization: "Bearer " + token },
+                () => {
+                    log("Connected to WebSocket");
+
+                    stompClient.subscribe("/topic/notifications", (message) => {
+                        const body = JSON.parse(message.body);
+                        log("Received:", JSON.stringify(body));
+                    });
+                },
+                (error) => {
+                    log("Connection error:", error);
+                }
+            );
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect(() => {
+                    log("Disconnected from WebSocket");
+                });
+            }
+        }
+
+        function log(...args) {
+            const div = document.getElementById("output");
+            const msg = document.createElement("div");
+            msg.textContent = args.join(" ");
+            div.appendChild(msg);
+        }
+    </script>
+</body>
+</html>

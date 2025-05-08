@@ -14,7 +14,7 @@ public class JacksonConfig {
     @Primary
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
         ObjectMapper objectMapper = builder.build();
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        // objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         return objectMapper;
     }
 }
