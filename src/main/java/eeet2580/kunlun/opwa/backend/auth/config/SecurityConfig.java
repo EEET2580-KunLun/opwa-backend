@@ -6,7 +6,6 @@ import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
 import eeet2580.kunlun.opwa.backend.auth.service.impl.OAuth2UserServiceImpl;
 import eeet2580.kunlun.opwa.backend.staff.repository.StaffRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -37,6 +36,7 @@ public class SecurityConfig {
     private final JwtTokenUtil jwtTokenUtil;
     private final StaffRepository staffRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Environment environment;
 
     @Bean
     public AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception {
@@ -48,19 +48,19 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())) // enable the CSRF protection and store the CSRF token in a cookie
+                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v1/auth/**", "/oauth2/**", "/login/**", "/v1/csrf").permitAll()
                         .anyRequest().authenticated())
 
-                .oauth2Login(oauth2 -> oauth2 // Sign in with Google
+                .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2AuthenticationSuccessHandler())
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService())))
 
                 .httpBasic(Customizer.withDefaults())
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint()))  // Add this line
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint()))
                 .addFilterBefore(jwtRequestFilter(), UsernamePasswordAuthenticationFilter.class)
                 .userDetailsService(authService);
 
@@ -73,11 +73,6 @@ public class SecurityConfig {
         return new CustomAuthenticationEntryPoint();
     }
 
-    /**
-     * Extract the authenticated user as a StaffEntity
-     * Generate a JWT token
-     * Construct a redirect URL to the frontend
-     */
     @Bean
     public OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
         return new OAuth2AuthenticationSuccessHandler(jwtTokenUtil);
@@ -92,9 +87,6 @@ public class SecurityConfig {
     public JwtRequestFilter jwtRequestFilter() {
         return new JwtRequestFilter(authService, jwtTokenUtil);
     }
-
-    @Autowired
-    private Environment environment;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

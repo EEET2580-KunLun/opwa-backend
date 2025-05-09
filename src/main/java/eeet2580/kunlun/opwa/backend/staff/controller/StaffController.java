@@ -85,7 +85,12 @@ public class StaffController {
 
         // Create StaffEntity from the request
         StaffEntity staff = staffMapper.fromReq(request);
-        StaffEntity createdStaff = staffService.createStaffWithImages(staff, profilePicture, frontIdPicture, backIdPicture);
+        StaffEntity createdStaff = null;
+        try {
+            createdStaff = staffService.createStaffWithImages(staff, profilePicture, frontIdPicture, backIdPicture);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         StaffRes staffDto = staffMapper.toRes(createdStaff);
         BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.CREATED.value(), "Staff created successfully", staffDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -201,6 +206,8 @@ public class StaffController {
             BaseRes<UploadIdRes> response = new BaseRes<>(
                     HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
