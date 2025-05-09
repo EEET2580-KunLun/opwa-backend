@@ -43,7 +43,6 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // Define how HTTP requests should be secured
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -66,7 +65,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 
     @Bean
     public CustomAuthenticationEntryPoint customAuthenticationEntryPoint() {
