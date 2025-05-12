@@ -81,7 +81,7 @@ public class StaffController {
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
             @RequestPart(value = "frontIdPicture") MultipartFile frontIdPicture,
             @RequestPart(value = "backIdPicture") MultipartFile backIdPicture
-    ) {
+    ) throws IOException {
 
         // Create StaffEntity from the request
         StaffEntity staff = staffMapper.fromReq(request);
@@ -115,7 +115,7 @@ public class StaffController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    @PreAuthorize("hasRole('MASTER_ADMIN') or hasRole('ADMIN')") // ADMIN is allowed for testing
     @PostMapping("/invite")
     public ResponseEntity<BaseRes<InviteLinkRes>> inviteStaff(HttpServletRequest request) {
         String token = staffInviteService.generateInvite();
@@ -125,7 +125,7 @@ public class StaffController {
                 + (request.getServerPort() != 80 && request.getServerPort() != 443
                 ? ":" + request.getServerPort()
                 : "");
-        String link = baseUrl + "/auth/register?token=" + token;
+        String link = baseUrl + "v1/auth/register?token=" + token;
         InviteLinkRes inviteLinkRes = new InviteLinkRes(link);
         BaseRes<InviteLinkRes> response = new BaseRes<>(HttpStatus.OK.value(), "Invitation generated successfully", inviteLinkRes);
         return ResponseEntity.ok(response);
@@ -201,6 +201,8 @@ public class StaffController {
             BaseRes<UploadIdRes> response = new BaseRes<>(
                     HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

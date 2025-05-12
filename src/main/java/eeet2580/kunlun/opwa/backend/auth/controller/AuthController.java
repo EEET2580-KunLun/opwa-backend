@@ -134,7 +134,7 @@ public class AuthController {
     // Modify later
     // Clear the cookie when logging out
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public ResponseEntity<BaseRes<?>> logout(HttpServletResponse response) {
         // Create a cookie with the same name but zero max age to delete it
         Cookie jwtCookie = new Cookie("jwt_token", null);
         jwtCookie.setHttpOnly(true);
@@ -150,6 +150,9 @@ public class AuthController {
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(0);
         response.addCookie(refreshCookie);
-        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+
+        // Return proper BaseRes with safe response
+        BaseRes<?> responseBody = new BaseRes<>(HttpStatus.OK.value(), "Logout successful",null);
+        return ResponseEntity.ok(responseBody);
     }
 }
