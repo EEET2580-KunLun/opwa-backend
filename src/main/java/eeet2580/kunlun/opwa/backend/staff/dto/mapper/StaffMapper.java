@@ -55,6 +55,7 @@ public class StaffMapper {
         entity.setFirstName(req.getFirstName());
         entity.setMiddleName(req.getMiddleName());
         entity.setLastName(req.getLastName());
+        entity.setPassword(req.getPassword());
         entity.setNationalId(req.getNationalId());
         entity.setPhoneNumber(req.getPhoneNumber());
         entity.setDateOfBirth(req.getDateOfBirth());
