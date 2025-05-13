@@ -3,6 +3,7 @@ package eeet2580.kunlun.opwa.backend.staff.controller;
 import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.mapper.StaffMapper;
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
+import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReqForUpdating;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.InviteLinkRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadAvatarRes;
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -97,7 +97,8 @@ public class StaffController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BaseRes<StaffRes>> updateStaff(@PathVariable String id, @RequestBody StaffEntity staff) {
+    public ResponseEntity<BaseRes<StaffRes>> updateStaff(@PathVariable String id, @ModelAttribute @Valid StaffReqForUpdating request) {
+        StaffEntity staff = staffMapper.fromReq(request);
         try {
             StaffEntity updatedStaff = staffService.updateStaff(id, staff);
             StaffRes staffDto = staffMapper.toRes(updatedStaff);
