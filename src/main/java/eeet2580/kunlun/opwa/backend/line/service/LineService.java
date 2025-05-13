@@ -8,9 +8,9 @@ import eeet2580.kunlun.opwa.backend.trip.dto.resp.ScheduleOverviewRes;
 import eeet2580.kunlun.opwa.backend.trip.dto.resp.TripScheduleRes;
 import org.springframework.security.core.Authentication;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDateTime;
 
 public interface LineService {
     List<LineRes> getAllLines();
@@ -39,9 +39,10 @@ public interface LineService {
 
     /**
      * Get all trips for a metro line with pagination
+     *
      * @param lineId The ID of the metro line
-     * @param page Page number
-     * @param size Page size
+     * @param page   Page number
+     * @param size   Page size
      * @return List of trip schedules
      */
     List<TripScheduleRes> getLineTrips(String lineId, int page, int size);
@@ -49,7 +50,7 @@ public interface LineService {
     /**
      * Suspend a metro line or specific segments
      */
-    LineRes suspendLine(LineSuspensionReq suspensionReq, Authentication authentication);
+    LineRes suspendLine(String lineId, LineSuspensionReq suspensionReq, Authentication authentication);
 
     /**
      * Resume a suspended metro line

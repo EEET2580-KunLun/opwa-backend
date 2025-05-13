@@ -187,7 +187,7 @@ public class LineServiceImpl implements LineService {
                 stationStop.setDepartureTime(currentTime);
             } else {
                 // Add time from previous station
-                currentTime = currentTime.plus(sortedStations.get(i-1).getTimeFromPreviousStation());
+                currentTime = currentTime.plus(sortedStations.get(i - 1).getTimeFromPreviousStation());
                 stationStop.setArrivalTime(currentTime);
 
                 // Add a 30-second stop at each intermediate station
@@ -245,8 +245,7 @@ public class LineServiceImpl implements LineService {
 
     @Override
     @Transactional
-    public LineRes suspendLine(LineSuspensionReq suspensionReq, Authentication authentication) {
-        String lineId = suspensionReq.getLineId();
+    public LineRes suspendLine(String lineId, LineSuspensionReq suspensionReq, Authentication authentication) {
         LineEntity line = lineRepository.findById(lineId)
                 .orElseThrow(() -> new RuntimeException("Line not found with id: " + lineId));
 
@@ -277,7 +276,7 @@ public class LineServiceImpl implements LineService {
                 // Filter trips for the current line only
                 tripsWithStation = tripsWithStation.stream()
                         .filter(trip -> trip.getLineId().equals(lineId))
-                        .collect(Collectors.toList());
+                        .toList();
 
                 affectedTrips.addAll(tripsWithStation);
             }
@@ -372,16 +371,14 @@ public class LineServiceImpl implements LineService {
 
                     // Trip must depart after requested time
                     return tripDepartureTime.isAfter(finalDepartureTime) || tripDepartureTime.equals(finalDepartureTime);
-                })
-                .collect(Collectors.toList());
+                }).sorted(Comparator.comparing(trip ->
+                        trip.getStationStops().stream()
+                                .filter(stop -> stop.getStationId().equals(departureStationId))
+                                .findFirst()
+                                .get()
+                                .getDepartureTime())).toList();
 
         // Sort by departure time
-        validTrips.sort(Comparator.comparing(trip ->
-                trip.getStationStops().stream()
-                        .filter(stop -> stop.getStationId().equals(departureStationId))
-                        .findFirst()
-                        .get()
-                        .getDepartureTime()));
 
         // Take the next three trips
         List<TripScheduleEntity> nextThreeTrips = validTrips.stream()
