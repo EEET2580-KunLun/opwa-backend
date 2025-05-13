@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @Data
@@ -15,7 +16,7 @@ public class LineReq {
     private String name;
 
     @NotNull(message = "First departure time is required")
-    private long firstDepartureTime;
+    private Long firstDepartureTime;
 
     @NotNull(message = "Frequency is required")
     @Min(value = 1, message = "Frequency must be at least 1 minute")

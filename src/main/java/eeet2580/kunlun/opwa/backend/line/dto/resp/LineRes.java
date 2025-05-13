@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @Data
@@ -16,7 +17,7 @@ public class LineRes {
     private String id;
     private String staffId;
     private String name;
-    private long firstDepartureTime;
+    private Long firstDepartureTime;
     private Integer frequency;
     private LineEntity.Status status;
     private List<StationInLineRes> stations;

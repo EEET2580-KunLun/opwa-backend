@@ -126,12 +126,19 @@ public class LineServiceImpl implements LineService {
         // Generate schedules from first departure until 10:00 PM (22:00)
         List<TripScheduleEntity> generatedSchedules = new ArrayList<>();
 
-        // Get first departure time in milliseconds since epoch
+        // Get first departure time in milliseconds since midnight
         long firstDeparture = line.getFirstDepartureTime();
-        // Convert to LocalDateTime (assuming firstDepartureTime is stored as milliseconds since epoch)
-        LocalDateTime firstDepartureTime = LocalDateTime.ofInstant(
-                java.time.Instant.ofEpochMilli(firstDeparture),
-                java.time.ZoneId.systemDefault());
+
+        // Convert milliseconds since midnight to hours and minutes
+        int hours = (int) (firstDeparture / (60 * 60 * 1000));
+        int minutes = (int) ((firstDeparture % (60 * 60 * 1000)) / (60 * 1000));
+        int seconds = (int) ((firstDeparture % (60 * 1000)) / 1000);
+
+        // Create today's date with the specified time
+        LocalDateTime today = LocalDateTime.now();
+        LocalDateTime firstDepartureTime = LocalDateTime.of(
+                today.getYear(), today.getMonth(), today.getDayOfMonth(),
+                hours, minutes, seconds);
 
         // First trip is at first departure time
         LocalDateTime departureTime = firstDepartureTime;
