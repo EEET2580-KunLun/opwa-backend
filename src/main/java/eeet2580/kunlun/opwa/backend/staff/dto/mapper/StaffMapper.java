@@ -1,6 +1,7 @@
 package eeet2580.kunlun.opwa.backend.staff.dto.mapper;
 
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
+import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReqForUpdating;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import org.springframework.stereotype.Component;
@@ -45,6 +46,29 @@ public class StaffMapper {
     }
 
     public StaffEntity fromReq(StaffReq req) {
+        if (req == null) {
+            return null;
+        }
+
+        StaffEntity entity = new StaffEntity();
+        entity.setUsername(req.getUsername());
+        entity.setEmail(req.getEmail());
+        entity.setFirstName(req.getFirstName());
+        entity.setMiddleName(req.getMiddleName());
+        entity.setLastName(req.getLastName());
+        entity.setPassword(req.getPassword());
+        entity.setNationalId(req.getNationalId());
+        entity.setPhoneNumber(req.getPhoneNumber());
+        entity.setDateOfBirth(req.getDateOfBirth());
+        entity.setEmployed(req.isEmployed());
+        entity.setRole(req.getRole());
+        entity.setShift(req.getShift());
+        entity.setResidenceAddressEntity(req.getAddress());
+
+        return entity;
+    }
+
+    public StaffEntity fromReq(StaffReqForUpdating req) {
         if (req == null) {
             return null;
         }

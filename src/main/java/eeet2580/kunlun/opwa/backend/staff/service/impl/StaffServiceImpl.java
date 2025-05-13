@@ -101,11 +101,65 @@ public class StaffServiceImpl implements StaffService {
     @Override
     @Transactional
     public StaffEntity updateStaff(String id, StaffEntity updatedStaff) {
-        if (staffRepository.existsById(id)) {
-            updatedStaff.setId(id);
-            return staffRepository.save(updatedStaff);
+        StaffEntity existedStaff = staffRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Staff not found with: " + id));
+
+        // Only update fields that are provided (not null)
+        if (updatedStaff.getEmail() != null) {
+            existedStaff.setEmail(updatedStaff.getEmail());
         }
-        throw new RuntimeException("Staff not found with: " + id);
+        if (updatedStaff.getUsername() != null) {
+            existedStaff.setUsername(updatedStaff.getUsername());
+        }
+        if (updatedStaff.getPassword() != null && !updatedStaff.getPassword().isEmpty()) {
+            existedStaff.setPassword(passwordEncoder.encode(updatedStaff.getPassword()));
+        }
+        if (updatedStaff.getFirstName() != null) {
+            existedStaff.setFirstName(updatedStaff.getFirstName());
+        }
+        if (updatedStaff.getMiddleName() != null) {
+            existedStaff.setMiddleName(updatedStaff.getMiddleName());
+        }
+        if (updatedStaff.getLastName() != null) {
+            existedStaff.setLastName(updatedStaff.getLastName());
+        }
+        if (updatedStaff.getDateOfBirth() != null) {
+            existedStaff.setDateOfBirth(updatedStaff.getDateOfBirth());
+        }
+        if (updatedStaff.getRole() != null) {
+            existedStaff.setRole(updatedStaff.getRole());
+        }
+        if (updatedStaff.getShift() != null) {
+            existedStaff.setShift(updatedStaff.getShift());
+        }
+        // Handle boolean field - employed
+        existedStaff.setEmployed(updatedStaff.isEmployed());
+
+        if (updatedStaff.getResidenceAddressEntity() != null) {
+            existedStaff.setResidenceAddressEntity(updatedStaff.getResidenceAddressEntity());
+        }
+
+        // Handle phone number specially
+        if (updatedStaff.getPhoneNumber() != null) {
+            if (updatedStaff.getPhoneNumber().startsWith("******")) {
+                // Phone number unchanged (still masked) - keep original
+            } else {
+                // New phone number - encrypt it
+                existedStaff.setPhoneNumber(encryptPhoneNumber(updatedStaff.getPhoneNumber()));
+            }
+        }
+
+        // Handle national ID specially
+        if (updatedStaff.getNationalId() != null) {
+            if (updatedStaff.getNationalId().startsWith("********")) {
+                // National ID unchanged (still masked) - keep original
+            } else {
+                // New national ID - encrypt it
+                existedStaff.setNationalId(encryptNationalId(updatedStaff.getNationalId()));
+            }
+        }
+
+        return staffRepository.save(existedStaff);
     }
 
     @Override
