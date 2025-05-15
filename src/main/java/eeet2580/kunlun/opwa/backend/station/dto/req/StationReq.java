@@ -1,5 +1,6 @@
 package eeet2580.kunlun.opwa.backend.station.dto.req;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -12,6 +13,7 @@ public class StationReq {
     private String address;
 
     @NotNull(message = "Active status is required")
+    @JsonProperty("is_active")
     private boolean isActive;
 
     @NotNull(message = "Location coordinates are required")
