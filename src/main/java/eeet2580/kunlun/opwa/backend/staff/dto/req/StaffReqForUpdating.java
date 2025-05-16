@@ -26,7 +26,7 @@ public class StaffReqForUpdating {
     private String username;
 
     @Nullable
-    @Pattern(regexp = "^$|(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%]).{8,}", message = "Password must contain uppercase, lowercase, digit, special character, and minimum 8 characters.")
+    @Pattern(regexp = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%!.]).{8,}", message = "Password must contain uppercase, lowercase, digit, special character, and minimum 8 characters.")
     private String password;
 
     @Pattern(regexp = "^[a-zA-ZÀ-ỹ\\s]{1,50}$", message = "Name must only contain alphabetic characters.")
