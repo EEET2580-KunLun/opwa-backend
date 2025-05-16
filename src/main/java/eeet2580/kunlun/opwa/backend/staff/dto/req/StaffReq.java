@@ -22,7 +22,7 @@ public class StaffReq {
     private String email;
 
     @NotBlank
-    @Pattern(regexp = "^[a-zA-Z0-9]{6,}$", message = "Username must be alphanumeric and at least 6 characters.")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]{1,20}$", message = "Username may contain letters (including Vietnamese), digits, and spaces, and must be 1–20 characters long")
     private String username;
 
     @NotBlank
