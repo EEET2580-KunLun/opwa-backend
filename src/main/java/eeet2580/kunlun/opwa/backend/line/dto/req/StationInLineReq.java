@@ -16,5 +16,6 @@ public class StationInLineReq {
     @Min(value = 0, message = "Sequence must be a positive number")
     private int sequence;
 
+//    @Min(value = 60, message = "Time must be at least 1 minute (60 seconds)")
     private Duration timeFromPreviousStation;
 }

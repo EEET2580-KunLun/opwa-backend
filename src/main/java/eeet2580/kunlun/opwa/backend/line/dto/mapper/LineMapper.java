@@ -10,6 +10,7 @@ import eeet2580.kunlun.opwa.backend.station.repository.StationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,7 +81,14 @@ public class LineMapper {
         LineEntity.StationInLine entity = new LineEntity.StationInLine();
         entity.setStationId(req.getStationId());
         entity.setSequence(req.getSequence());
-        entity.setTimeFromPreviousStation(req.getTimeFromPreviousStation());
+
+        if (req.getTimeFromPreviousStation() != null) {
+            Duration seconds = req.getTimeFromPreviousStation();
+            Duration minutes = Duration.ofMinutes(seconds.getSeconds() / 60);
+            entity.setTimeFromPreviousStation(minutes);
+        } else {
+            entity.setTimeFromPreviousStation(null);
+        }
 
         StationEntity station = stationRepository.findById(req.getStationId())
                 .orElseThrow(() -> new RuntimeException("Station not found with id: " + req.getStationId()));
