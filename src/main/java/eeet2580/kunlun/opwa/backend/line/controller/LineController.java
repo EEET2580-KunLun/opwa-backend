@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,6 +64,7 @@ public class LineController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN',  'OPERATOR')")
     public ResponseEntity<BaseRes<LineRes>> createLine(
             @Valid @RequestBody LineReq lineReq,
             Authentication authentication) {
@@ -79,6 +81,7 @@ public class LineController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN',  'OPERATOR')")
     public ResponseEntity<BaseRes<LineRes>> updateLine(
             @PathVariable String id,
             @Valid @RequestBody LineReq lineReq,
@@ -100,6 +103,7 @@ public class LineController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN',  'OPERATOR')")
     public ResponseEntity<BaseRes<Void>> deleteLine(@PathVariable String id) {
         if (lineService.getLineById(id).isEmpty()) {
             BaseRes<Void> response = new BaseRes<>(
@@ -113,6 +117,7 @@ public class LineController {
     }
 
     @PostMapping("/{id}/schedule/generate")
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN', 'OPERATOR')")
     public ResponseEntity<BaseRes<ScheduleOverviewRes>> generateLineSchedule(
             @PathVariable String id,
             @Valid @RequestBody ScheduleReq scheduleReq) {
@@ -163,6 +168,7 @@ public class LineController {
     }
 
     @PostMapping("/{id}/suspend")
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN', 'OPERATOR')")
     public ResponseEntity<BaseRes<LineRes>> suspendLine(
             @PathVariable String id,
             @Valid @RequestBody LineSuspensionReq suspensionReq,
@@ -180,6 +186,7 @@ public class LineController {
     }
 
     @PostMapping("/{id}/resume")
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN', 'OPERATOR')")
     public ResponseEntity<BaseRes<LineRes>> resumeLine(
             @PathVariable String id,
             Authentication authentication) {

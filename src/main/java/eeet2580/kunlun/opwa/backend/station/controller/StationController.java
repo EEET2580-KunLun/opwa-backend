@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -57,6 +58,7 @@ public class StationController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN', 'OPERATOR')")
     public ResponseEntity<BaseRes<StationRes>> createStation(@Valid @RequestBody StationReq stationReq) {
         try {
             StationEntity station = stationMapper.toEntity(stationReq);
@@ -72,6 +74,7 @@ public class StationController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN', 'OPERATOR')")
     public ResponseEntity<BaseRes<StationRes>> updateStation(
             @PathVariable String id,
             @Valid @RequestBody StationReq stationReq) {
@@ -93,6 +96,7 @@ public class StationController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN', 'OPERATOR')")
     public ResponseEntity<BaseRes<Void>> deleteStation(@PathVariable String id) {
         if (stationService.getStationById(id).isEmpty()) {
             BaseRes<Void> response = new BaseRes<>(

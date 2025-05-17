@@ -117,6 +117,7 @@ public class StaffController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN')")
     public ResponseEntity<BaseRes<Void>> deleteStaff(@PathVariable String id) {
         if (staffService.getStaffById(id).isEmpty()) {
             BaseRes<Void> response = new BaseRes<>(HttpStatus.NOT_FOUND.value(), "Staff not found", null);
@@ -127,7 +128,7 @@ public class StaffController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('MASTER_ADMIN') or hasRole('ADMIN')") // ADMIN is allowed for testing
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN')")// ADMIN is allowed for testing
     @PostMapping("/invite")
     public ResponseEntity<BaseRes<InviteLinkRes>> inviteStaff(HttpServletRequest request) {
         String token = staffInviteService.generateInvite();
