@@ -5,7 +5,9 @@ import eeet2580.kunlun.opwa.backend.auth.dto.req.LoginReq;
 import eeet2580.kunlun.opwa.backend.auth.dto.resp.TokenRes;
 import eeet2580.kunlun.opwa.backend.auth.service.AuthService;
 import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
+import eeet2580.kunlun.opwa.backend.staff.dto.mapper.StaffMapper;
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
+import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,13 +33,6 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtTokenUtil jwtTokenUtil;
-
-    @GetMapping("/validate")
-    public ResponseEntity<?> validateToken() {
-        // The mere fact that this endpoint returns 200 OK means the token is valid
-        // because the JwtRequestFilter will have already checked the token
-        return ResponseEntity.ok(Map.of("valid", true));
-    }
 
     @PostMapping("/register")
     public ResponseEntity<BaseRes<StaffEntity>> register(
@@ -135,6 +130,8 @@ public class AuthController {
     // Clear the cookie when logging out
     @PostMapping("/logout")
     public ResponseEntity<BaseRes<?>> logout(HttpServletResponse response) {
+
+
         // Create a cookie with the same name but zero max age to delete it
         Cookie jwtCookie = new Cookie("jwt_token", null);
         jwtCookie.setHttpOnly(true);
@@ -154,5 +151,52 @@ public class AuthController {
         // Return proper BaseRes with safe response
         BaseRes<?> responseBody = new BaseRes<>(HttpStatus.OK.value(), "Logout successful",null);
         return ResponseEntity.ok(responseBody);
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<BaseRes<TokenRes>> validateToken(HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("Validate token request received");
+        // Extract JWT token from cookie
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("jwt_token".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        // If no token found, return unauthorized
+        if (token == null) {
+            System.out.println("Validate token request exception: " + "JWT token not found");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new BaseRes<>(HttpStatus.UNAUTHORIZED.value(), "JWT token not found", null));
+        }
+
+        try {
+            // Extract username from token (email in your case)
+            String email = jwtTokenUtil.getEmailFromToken(token);
+
+            // Get staff entity from service
+            StaffEntity staff = authService.findByEmail(email);
+
+            // Generate new tokens
+            TokenRes tokens = authService.validate(staff);
+            // Add cookies
+            response.addCookie(jwtTokenUtil.getCookieFromToken("jwt_token", tokens));
+            response.addCookie(jwtTokenUtil.getCookieFromToken("refresh_token", tokens));
+
+            // Create a safe response (without exposing tokens)
+            TokenRes safeResponse = new TokenRes();
+            safeResponse.setStaff(tokens.getStaff());
+            safeResponse.setExpiresIn(tokens.getExpiresIn());
+
+            return ResponseEntity.ok(new BaseRes<>(
+                    HttpStatus.OK.value(), "Token is valid", safeResponse));
+        } catch (Exception e) {
+            System.out.println("Validate token request exception: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new BaseRes<>(HttpStatus.UNAUTHORIZED.value(), e.getMessage(), null));
+        }
     }
 }

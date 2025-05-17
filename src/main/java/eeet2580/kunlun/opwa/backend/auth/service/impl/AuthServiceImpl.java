@@ -100,6 +100,16 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    // Validates user credentials for Google
+    @Override
+    public TokenRes validate(StaffEntity staff) {
+        try {
+            return buildTokenResFromStaff(staff);
+        } catch (WeakKeyException e) {
+            throw new RuntimeException("Error generating token", e);
+        }
+    }
+
     @Override
     public TokenRes refreshToken(String refreshToken) {
         StaffEntity staff = staffRepository.findByRefreshToken(refreshToken)

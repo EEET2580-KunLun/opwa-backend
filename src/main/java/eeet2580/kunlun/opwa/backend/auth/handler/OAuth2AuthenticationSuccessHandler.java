@@ -58,7 +58,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 //                .build().toUriString();
 
         // Redirect to frontend after successful authentication
-        String redirectUrl = frontendBaseUrl + "/dashboard";
+        String redirectUrl = frontendBaseUrl + "/OAuth2/callback";
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 }

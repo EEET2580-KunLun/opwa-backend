@@ -14,6 +14,7 @@ public interface AuthService extends UserDetailsService {
     StaffEntity findByUsername(String username);
 
     TokenRes login(LoginReq req);
+    TokenRes validate(StaffEntity staff);
 
     TokenRes refreshToken(String refreshToken);
 }
