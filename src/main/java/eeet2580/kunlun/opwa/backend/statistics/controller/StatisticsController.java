@@ -2,6 +2,7 @@ package eeet2580.kunlun.opwa.backend.statistics.controller;
 
 import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
 import eeet2580.kunlun.opwa.backend.statistics.dto.resp.TicketAnalyticsRes;
+import eeet2580.kunlun.opwa.backend.statistics.dto.resp.UserAnalyticsRes;
 import eeet2580.kunlun.opwa.backend.statistics.service.StatisticService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,15 @@ public class StatisticsController {
 
         BaseRes<TicketAnalyticsRes> response = new BaseRes<>(
                 HttpStatus.OK.value(), "Successfully get tickets analytics", analytics);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<BaseRes<UserAnalyticsRes>> getUserAnalytics() {
+        UserAnalyticsRes analytics = statisticService.getUserAnalytics();
+
+        BaseRes<UserAnalyticsRes> response = new BaseRes<>(
+                HttpStatus.OK.value(), "Successfully get user analytics", analytics);
         return ResponseEntity.ok(response);
     }
 }
