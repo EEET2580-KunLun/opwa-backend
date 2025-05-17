@@ -1,5 +1,6 @@
 package eeet2580.kunlun.opwa.backend.station.service.impl;
 
+import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
 import eeet2580.kunlun.opwa.backend.line.service.StationReferenceService;
 import eeet2580.kunlun.opwa.backend.station.dto.mapper.StationMapper;
 import eeet2580.kunlun.opwa.backend.station.dto.resp.StationRes;
@@ -7,6 +8,10 @@ import eeet2580.kunlun.opwa.backend.station.model.StationEntity;
 import eeet2580.kunlun.opwa.backend.station.repository.StationRepository;
 import eeet2580.kunlun.opwa.backend.station.service.StationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,9 +25,23 @@ public class StationServiceImpl implements StationService {
     private final StationMapper stationMapper;
 
     @Override
-    public List<StationRes> getAllStations() {
-        List<StationEntity> entities = stationRepository.findAll();
-        return stationMapper.toDtoList(entities);
+    public PagedResponse<StationRes> getAllStations(int page, int size, String sortBy, String direction) {
+        Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ?
+                Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<StationEntity> stationsPage = stationRepository.findAll(pageable);
+
+        List<StationRes> content = stationMapper.toDtoList(stationsPage.getContent());
+
+        return new PagedResponse<>(
+                content,
+                stationsPage.getNumber(),
+                stationsPage.getSize(),
+                stationsPage.getTotalElements(),
+                stationsPage.getTotalPages(),
+                stationsPage.isLast()
+        );
     }
 
     @Override

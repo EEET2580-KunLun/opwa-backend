@@ -1,10 +1,12 @@
 package eeet2580.kunlun.opwa.backend.line.controller;
 
 import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
+import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
 import eeet2580.kunlun.opwa.backend.line.dto.req.LineReq;
 import eeet2580.kunlun.opwa.backend.line.dto.req.LineSuspensionReq;
 import eeet2580.kunlun.opwa.backend.line.dto.resp.LineRes;
 import eeet2580.kunlun.opwa.backend.line.service.LineService;
+import eeet2580.kunlun.opwa.backend.trip.dto.req.ScheduleReq;
 import eeet2580.kunlun.opwa.backend.trip.dto.resp.ScheduleOverviewRes;
 import eeet2580.kunlun.opwa.backend.trip.dto.resp.TripScheduleRes;
 import jakarta.validation.Valid;
@@ -33,10 +35,15 @@ public class LineController {
     private final LineService lineService;
 
     @GetMapping
-    public ResponseEntity<BaseRes<List<LineRes>>> getAllLines() {
-        List<LineRes> lines = lineService.getAllLines();
-        BaseRes<List<LineRes>> response = new BaseRes<>(
-                HttpStatus.OK.value(), "Line list retrieved successfully", lines);
+    public ResponseEntity<BaseRes<PagedResponse<LineRes>>> getAllLines(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "2") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        PagedResponse<LineRes> linesPage = lineService.getAllLines(page, size, sortBy, direction);
+        BaseRes<PagedResponse<LineRes>> response = new BaseRes<>(
+                HttpStatus.OK.value(), "Line list retrieved successfully", linesPage);
         return ResponseEntity.ok(response);
     }
 
@@ -107,9 +114,10 @@ public class LineController {
 
     @PostMapping("/{id}/schedule/generate")
     public ResponseEntity<BaseRes<ScheduleOverviewRes>> generateLineSchedule(
-            @PathVariable String id) {
+            @PathVariable String id,
+            @Valid @RequestBody ScheduleReq scheduleReq) {
         try {
-            ScheduleOverviewRes scheduleOverview = lineService.generateLineSchedule(id);
+            ScheduleOverviewRes scheduleOverview = lineService.generateLineSchedule(id, scheduleReq);
             BaseRes<ScheduleOverviewRes> response = new BaseRes<>(
                     HttpStatus.OK.value(), "Schedule generated successfully", scheduleOverview);
             return ResponseEntity.ok(response);
@@ -136,17 +144,19 @@ public class LineController {
     }
 
     @GetMapping("/{id}/trips")
-    public ResponseEntity<BaseRes<List<TripScheduleRes>>> getLineTrips(
+    public ResponseEntity<BaseRes<PagedResponse<TripScheduleRes>>> getLineTrips(
             @PathVariable String id,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "departureTime") String sortBy,
+            @RequestParam(defaultValue = "ASC") String direction) {
         try {
-            List<TripScheduleRes> trips = lineService.getLineTrips(id, page, size);
-            BaseRes<List<TripScheduleRes>> response = new BaseRes<>(
+            PagedResponse<TripScheduleRes> trips = lineService.getLineTrips(id, page, size, sortBy, direction);
+            BaseRes<PagedResponse<TripScheduleRes>> response = new BaseRes<>(
                     HttpStatus.OK.value(), "Trips retrieved successfully", trips);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            BaseRes<List<TripScheduleRes>> response = new BaseRes<>(
+            BaseRes<PagedResponse<TripScheduleRes>> response = new BaseRes<>(
                     HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }

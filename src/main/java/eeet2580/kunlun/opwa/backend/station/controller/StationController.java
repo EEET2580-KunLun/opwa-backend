@@ -1,6 +1,7 @@
 package eeet2580.kunlun.opwa.backend.station.controller;
 
 import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
+import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
 import eeet2580.kunlun.opwa.backend.station.dto.mapper.StationMapper;
 import eeet2580.kunlun.opwa.backend.station.dto.req.StationReq;
 import eeet2580.kunlun.opwa.backend.station.dto.resp.StationRes;
@@ -17,9 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1/stations")
@@ -29,10 +29,15 @@ public class StationController {
     private final StationMapper stationMapper;
 
     @GetMapping
-    public ResponseEntity<BaseRes<List<StationRes>>> getAllStations() {
-        List<StationRes> stations = stationService.getAllStations();
-        BaseRes<List<StationRes>> response = new BaseRes<>(
-                HttpStatus.OK.value(), "Station list retrieved successfully", stations);
+    public ResponseEntity<BaseRes<PagedResponse<StationRes>>> getAllStations(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        PagedResponse<StationRes> stationsPage = stationService.getAllStations(page, size, sortBy, direction);
+        BaseRes<PagedResponse<StationRes>> response = new BaseRes<>(
+                HttpStatus.OK.value(), "Station list retrieved successfully", stationsPage);
         return ResponseEntity.ok(response);
     }
 

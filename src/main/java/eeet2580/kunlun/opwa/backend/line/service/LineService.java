@@ -1,9 +1,11 @@
 package eeet2580.kunlun.opwa.backend.line.service;
 
+import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
 import eeet2580.kunlun.opwa.backend.line.dto.req.LineReq;
 import eeet2580.kunlun.opwa.backend.line.dto.req.LineSuspensionReq;
 import eeet2580.kunlun.opwa.backend.line.dto.resp.LineRes;
 import eeet2580.kunlun.opwa.backend.line.model.LineEntity;
+import eeet2580.kunlun.opwa.backend.trip.dto.req.ScheduleReq;
 import eeet2580.kunlun.opwa.backend.trip.dto.resp.ScheduleOverviewRes;
 import eeet2580.kunlun.opwa.backend.trip.dto.resp.TripScheduleRes;
 import org.springframework.security.core.Authentication;
@@ -13,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LineService {
-    List<LineRes> getAllLines();
+    PagedResponse<LineRes> getAllLines(int page, int size, String sortBy, String direction);
 
     Optional<LineRes> getLineById(String id);
 
@@ -30,22 +32,14 @@ public interface LineService {
     /**
      * Generate trip schedules for a metro line based on first departure time and frequency
      */
-    ScheduleOverviewRes generateLineSchedule(String lineId);
+    ScheduleOverviewRes generateLineSchedule(String lineId, ScheduleReq scheduleReq);
 
     /**
      * Get schedule overview for a metro line
      */
     ScheduleOverviewRes getScheduleOverview(String lineId);
 
-    /**
-     * Get all trips for a metro line with pagination
-     *
-     * @param lineId The ID of the metro line
-     * @param page   Page number
-     * @param size   Page size
-     * @return List of trip schedules
-     */
-    List<TripScheduleRes> getLineTrips(String lineId, int page, int size);
+    PagedResponse<TripScheduleRes> getLineTrips(String lineId, int page, int size, String sortBy, String direction);
 
     /**
      * Suspend a metro line or specific segments

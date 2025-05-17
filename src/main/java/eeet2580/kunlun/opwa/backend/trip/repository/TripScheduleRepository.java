@@ -1,6 +1,7 @@
 package eeet2580.kunlun.opwa.backend.trip.repository;
 
 import eeet2580.kunlun.opwa.backend.trip.model.TripScheduleEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -12,10 +13,11 @@ import java.util.List;
 
 @Repository
 public interface TripScheduleRepository extends MongoRepository<TripScheduleEntity, String> {
-
     List<TripScheduleEntity> findByLineId(String lineId);
 
     List<TripScheduleEntity> findByLineId(String lineId, Sort sort);
+
+    Page<TripScheduleEntity> findByLineId(String lineId, Pageable pageable);
 
     @Query(value = "{'lineId': ?0}", sort = "{'departureTime': 1}")
     List<TripScheduleEntity> findFirstTwoByLineId(String lineId, Pageable pageable);

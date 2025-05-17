@@ -1,11 +1,18 @@
 package eeet2580.kunlun.opwa.backend.staff.service.impl;
 
+import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
+import eeet2580.kunlun.opwa.backend.staff.dto.mapper.StaffMapper;
+import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadIdRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import eeet2580.kunlun.opwa.backend.staff.repository.StaffRepository;
 import eeet2580.kunlun.opwa.backend.staff.service.PictureService;
 import eeet2580.kunlun.opwa.backend.staff.service.StaffService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,11 +29,27 @@ public class StaffServiceImpl implements StaffService {
 
     private final StaffRepository staffRepository;
     private final PictureService pictureService;
+    private final StaffMapper staffMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public List<StaffEntity> getAllStaff() {
-        return staffRepository.findAll();
+    public PagedResponse<StaffRes> getAllStaffs(int page, int size, String sortBy, String direction) {
+        Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ?
+                Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<StaffEntity> staffsPage = staffRepository.findAll(pageable);
+
+        List<StaffRes> content = staffMapper.toResList(staffsPage.getContent());
+
+        return new PagedResponse<>(
+                content,
+                staffsPage.getNumber(),
+                staffsPage.getSize(),
+                staffsPage.getTotalElements(),
+                staffsPage.getTotalPages(),
+                staffsPage.isLast()
+        );
     }
 
     @Override
