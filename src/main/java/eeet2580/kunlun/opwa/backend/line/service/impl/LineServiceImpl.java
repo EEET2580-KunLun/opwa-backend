@@ -230,7 +230,7 @@ public class LineServiceImpl implements LineService {
                 lineId, PageRequest.of(0, 2));
 
         // Get total trip count
-        long totalTripCount = tripScheduleRepository.count();
+        long totalTripCount = tripScheduleRepository.countByLineId(lineId);
 
         ScheduleOverviewRes overview = new ScheduleOverviewRes();
         overview.setLineId(lineId);
