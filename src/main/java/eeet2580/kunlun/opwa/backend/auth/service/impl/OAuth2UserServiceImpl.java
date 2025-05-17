@@ -39,14 +39,6 @@ public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
         }
     }
 
-    private String extractEmail(Map<String, Object> attributes, String provider) {
-        if ("google".equals(provider)) {
-            return (String) attributes.get("email");
-        } else if ("github".equals(provider)) {
-            return (String) attributes.get("email");
-        }
-        throw new OAuth2AuthenticationException("Unsupported provider: " + provider);
-    }
 
     private StaffEntity createUserFromOAuth2(Map<String, Object> attributes, String provider) {
         String email = extractEmail(attributes, provider);
@@ -54,17 +46,22 @@ public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
 
         StaffEntity staff = new StaffEntity();
         staff.setEmail(email);
-        staff.setUsername(email.split("@")[0] + UUID.randomUUID().toString().substring(0, 8));
+
+        //this causes username to be longer than 20 characters
+//        staff.setUsername(email.split("@")[0] + UUID.randomUUID().toString().substring(0, 8));
+
+        staff.setUsername(email);
         staff.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
 
         // Set name fields based on provider's information
-        String[] nameParts = name.split(" ");
-        if (nameParts.length > 0) {
-            staff.setFirstName(nameParts[0]);
-            if (nameParts.length > 1) {
-                staff.setLastName(nameParts[nameParts.length - 1]);
-            }
-        }
+//        String[] nameParts = name.split(" ");
+//        if (nameParts.length > 0) {
+//            staff.setFirstName(nameParts[0]);
+//            if (nameParts.length > 1) {
+//                staff.setLastName(nameParts[nameParts.length - 1]);
+//            }
+//        }
+
 
         staff.setRole(StaffEntity.Role.OPERATOR);
         staff.setEmployed(true);
@@ -73,6 +70,15 @@ public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
         staff.setAvatarUrl(extractAvatarUrl(attributes, provider));
 
         return staff;
+    }
+
+    private String extractEmail(Map<String, Object> attributes, String provider) {
+        if ("google".equals(provider)) {
+            return (String) attributes.get("email");
+        } else if ("github".equals(provider)) {
+            return (String) attributes.get("email");
+        }
+        throw new OAuth2AuthenticationException("Unsupported provider: " + provider);
     }
 
     private String extractName(Map<String, Object> attributes, String provider) {
