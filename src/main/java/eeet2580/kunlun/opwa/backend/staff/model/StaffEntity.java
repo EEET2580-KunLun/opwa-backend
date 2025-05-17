@@ -21,7 +21,8 @@ public class StaffEntity implements OAuth2User {
         MASTER_ADMIN,
         ADMIN,
         OPERATOR,
-        TICKET_AGENT
+        TICKET_AGENT,
+        PASSENGER
     }
 
     @Id
