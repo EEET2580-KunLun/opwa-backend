@@ -1,15 +1,16 @@
 package eeet2580.kunlun.opwa.backend.staff.service;
 
+import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
+import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadIdRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 public interface StaffService {
-    List<StaffEntity> getAllStaff();
+    PagedResponse<StaffRes> getAllStaffs(int page, int size, String sortBy, String direction);
 
     Optional<StaffEntity> getStaffById(String id);
 

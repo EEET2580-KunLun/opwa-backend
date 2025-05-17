@@ -1,6 +1,7 @@
 package eeet2580.kunlun.opwa.backend.staff.controller;
 
 import eeet2580.kunlun.opwa.backend.common.dto.resp.BaseRes;
+import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
 import eeet2580.kunlun.opwa.backend.staff.dto.mapper.StaffMapper;
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReqForUpdating;
@@ -26,12 +27,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1/staffs")
@@ -42,10 +43,15 @@ public class StaffController {
     private final StaffInviteService staffInviteService;
 
     @GetMapping
-    public ResponseEntity<BaseRes<List<StaffRes>>> getAllStaff() {
-        List<StaffEntity> staffList = staffService.getAllStaff();
-        List<StaffRes> staffDtoList = staffMapper.toResList(staffList);
-        BaseRes<List<StaffRes>> response = new BaseRes<>(HttpStatus.OK.value(), "Staff list retrieved successfully", staffDtoList);
+    public ResponseEntity<BaseRes<PagedResponse<StaffRes>>> getAllStaff(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "firstName") String sortBy,
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        PagedResponse<StaffRes> staffPage = staffService.getAllStaffs(page, size, sortBy, direction);
+        BaseRes<PagedResponse<StaffRes>> response = new BaseRes<>(
+                HttpStatus.OK.value(), "Staff list retrieved successfully", staffPage);
         return ResponseEntity.ok(response);
     }
 

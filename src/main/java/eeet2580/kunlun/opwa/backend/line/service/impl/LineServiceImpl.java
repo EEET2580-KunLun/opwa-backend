@@ -1,5 +1,6 @@
 package eeet2580.kunlun.opwa.backend.line.service.impl;
 
+import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
 import eeet2580.kunlun.opwa.backend.line.dto.mapper.LineMapper;
 import eeet2580.kunlun.opwa.backend.line.dto.req.LineReq;
 import eeet2580.kunlun.opwa.backend.line.dto.req.LineSuspensionReq;
@@ -11,17 +12,23 @@ import eeet2580.kunlun.opwa.backend.notification.service.SuspensionNotificationS
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
 import eeet2580.kunlun.opwa.backend.staff.repository.StaffRepository;
 import eeet2580.kunlun.opwa.backend.trip.dto.mapper.TripScheduleMapper;
+import eeet2580.kunlun.opwa.backend.trip.dto.req.ScheduleReq;
 import eeet2580.kunlun.opwa.backend.trip.dto.resp.ScheduleOverviewRes;
 import eeet2580.kunlun.opwa.backend.trip.dto.resp.TripScheduleRes;
 import eeet2580.kunlun.opwa.backend.trip.model.TripScheduleEntity;
 import eeet2580.kunlun.opwa.backend.trip.repository.TripScheduleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -36,14 +43,27 @@ public class LineServiceImpl implements LineService {
     private final StaffRepository staffRepository;
     private final TripScheduleRepository tripScheduleRepository;
 
-    //TODO: Create the classes: TripScheduleMapper, SuspensionNotificationService later
     private final TripScheduleMapper tripScheduleMapper;
     private final SuspensionNotificationService suspensionNotificationService;
 
     @Override
-    public List<LineRes> getAllLines() {
-        List<LineEntity> entities = lineRepository.findAll();
-        return lineMapper.toDtoList(entities);
+    public PagedResponse<LineRes> getAllLines(int page, int size, String sortBy, String direction) {
+        Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ?
+                Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<LineEntity> linesPage = lineRepository.findAll(pageable);
+
+        List<LineRes> content = lineMapper.toDtoList(linesPage.getContent());
+
+        return new PagedResponse<>(
+                content,
+                linesPage.getNumber(),
+                linesPage.getSize(),
+                linesPage.getTotalElements(),
+                linesPage.getTotalPages(),
+                linesPage.isLast()
+        );
     }
 
     @Override
@@ -106,7 +126,7 @@ public class LineServiceImpl implements LineService {
 
     @Override
     @Transactional
-    public ScheduleOverviewRes generateLineSchedule(String lineId) {
+    public ScheduleOverviewRes generateLineSchedule(String lineId, ScheduleReq scheduleReq) {
         LineEntity line = lineRepository.findById(lineId)
                 .orElseThrow(() -> new RuntimeException("Line not found with id: " + lineId));
 
@@ -114,7 +134,6 @@ public class LineServiceImpl implements LineService {
         List<TripScheduleEntity> existingSchedules = tripScheduleRepository.findByLineId(lineId);
         tripScheduleRepository.deleteAll(existingSchedules);
 
-        // Sort stations by sequence
         List<LineEntity.StationInLine> sortedStations = line.getStations().stream()
                 .sorted(Comparator.comparingInt(LineEntity.StationInLine::getSequence))
                 .collect(Collectors.toList());
@@ -123,30 +142,32 @@ public class LineServiceImpl implements LineService {
             throw new IllegalArgumentException("A line must have at least two stations");
         }
 
-        // Generate schedules from first departure until 10:00 PM (22:00)
         List<TripScheduleEntity> generatedSchedules = new ArrayList<>();
 
-        // Get first departure time in milliseconds since midnight
-        long firstDeparture = line.getFirstDepartureTime();
+        LocalDateTime firstDepartureTime;
 
-        // Convert milliseconds since midnight to hours and minutes
-        int hours = (int) (firstDeparture / (60 * 60 * 1000));
-        int minutes = (int) ((firstDeparture % (60 * 60 * 1000)) / (60 * 1000));
-        int seconds = (int) ((firstDeparture % (60 * 1000)) / 1000);
+        // If provided timestamp is in the past, use it directly
+        if (scheduleReq.getDepartureTime() != null && scheduleReq.getDepartureTime() < System.currentTimeMillis()) {
+            firstDepartureTime = LocalDateTime.ofEpochSecond(scheduleReq.getDepartureTime(), 0, ZoneOffset.UTC);
+        } else {
+            // Otherwise use today with the line's first departure time
+            LocalDate today = LocalDate.now();
 
-        // Create today's date with the specified time
-        LocalDateTime today = LocalDateTime.now();
-        LocalDateTime firstDepartureTime = LocalDateTime.of(
-                today.getYear(), today.getMonth(), today.getDayOfMonth(),
-                hours, minutes, seconds);
+            long firstDeparture = line.getFirstDepartureTime();
 
-        // First trip is at first departure time
+            int hours = (int) (firstDeparture / (60 * 60 * 1000));
+            int minutes = (int) ((firstDeparture % (60 * 60 * 1000)) / (60 * 1000));
+            int seconds = (int) ((firstDeparture % (60 * 1000)) / 1000);
+
+            firstDepartureTime = LocalDateTime.of(
+                    today.getYear(), today.getMonth(), today.getDayOfMonth(),
+                    hours, minutes, seconds);
+        }
+
         LocalDateTime departureTime = firstDepartureTime;
 
-        // End time is 10:00 PM on the same day
         LocalDateTime endTime = firstDepartureTime.toLocalDate().atTime(22, 0);
 
-        // Generate trips until end time
         int tripCounter = 0;
         while (departureTime.isBefore(endTime)) {
             String tripCode = line.getName().replaceAll("\\s+", "") + "-" +
@@ -155,15 +176,12 @@ public class LineServiceImpl implements LineService {
             TripScheduleEntity tripSchedule = createTripSchedule(line, sortedStations, departureTime, tripCode);
             generatedSchedules.add(tripSchedule);
 
-            // Next departure is after the frequency interval
             departureTime = departureTime.plusMinutes(line.getFrequency());
             tripCounter++;
         }
 
-        // Save all generated schedules
         tripScheduleRepository.saveAll(generatedSchedules);
 
-        // Return the schedule overview
         return getScheduleOverview(lineId);
     }
 
@@ -210,12 +228,11 @@ public class LineServiceImpl implements LineService {
         tripSchedule.setStationStops(stationStops);
 
         // Set arrival time as the arrival time at the last station
-        tripSchedule.setArrivalTime(stationStops.get(stationStops.size() - 1).getArrivalTime());
+        tripSchedule.setArrivalTime(stationStops.getLast().getArrivalTime());
 
         return tripSchedule;
     }
 
-    //TODO: Not yet understand this method
     @Override
     public ScheduleOverviewRes getScheduleOverview(String lineId) {
         LineEntity line = lineRepository.findById(lineId)
@@ -243,10 +260,23 @@ public class LineServiceImpl implements LineService {
     }
 
     @Override
-    public List<TripScheduleRes> getLineTrips(String lineId, int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
-        List<TripScheduleEntity> trips = tripScheduleRepository.findByLineId(lineId, pageRequest);
-        return tripScheduleMapper.toDtoList(trips);
+    public PagedResponse<TripScheduleRes> getLineTrips(String lineId, int page, int size, String sortBy, String direction) {
+        Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ?
+                Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<TripScheduleEntity> tripsPage = tripScheduleRepository.findByLineId(lineId, pageable);
+
+        List<TripScheduleRes> content = tripScheduleMapper.toDtoList(tripsPage.getContent());
+
+        return new PagedResponse<>(
+                content,
+                tripsPage.getNumber(),
+                tripsPage.getSize(),
+                tripsPage.getTotalElements(),
+                tripsPage.getTotalPages(),
+                tripsPage.isLast()
+        );
     }
 
     @Override

@@ -1,13 +1,13 @@
 package eeet2580.kunlun.opwa.backend.station.service;
 
+import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
 import eeet2580.kunlun.opwa.backend.station.dto.resp.StationRes;
 import eeet2580.kunlun.opwa.backend.station.model.StationEntity;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface StationService {
-    List<StationRes> getAllStations();
+    PagedResponse<StationRes> getAllStations(int page, int size, String sortBy, String direction);
 
     Optional<StationRes> getStationById(String id);
 
