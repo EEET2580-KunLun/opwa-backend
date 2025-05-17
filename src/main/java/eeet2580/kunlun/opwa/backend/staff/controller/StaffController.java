@@ -43,6 +43,7 @@ public class StaffController {
     private final StaffInviteService staffInviteService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN')")
     public ResponseEntity<BaseRes<PagedResponse<StaffRes>>> getAllStaff(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -87,7 +88,7 @@ public class StaffController {
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
             @RequestPart(value = "frontIdPicture") MultipartFile frontIdPicture,
             @RequestPart(value = "backIdPicture") MultipartFile backIdPicture
-    ) throws IOException {
+    ) {
 
         // Create StaffEntity from the request
         StaffEntity staff = staffMapper.fromReq(request);
