@@ -15,7 +15,8 @@ import java.util.List;
 public interface TripScheduleRepository extends MongoRepository<TripScheduleEntity, String> {
     List<TripScheduleEntity> findByLineId(String lineId);
 
-    List<TripScheduleEntity> findByLineId(String lineId, Sort sort);
+    List<TripScheduleEntity> findByLineId(String lineId, Pageable pageable);
+    long countByLineId(String lineId);
 
     Page<TripScheduleEntity> findByLineId(String lineId, Pageable pageable);
 
