@@ -15,7 +15,7 @@ public interface TripScheduleRepository extends MongoRepository<TripScheduleEnti
 
     List<TripScheduleEntity> findByLineId(String lineId);
 
-    List<TripScheduleEntity> findByLineId(String lineId, Sort sort);
+    List<TripScheduleEntity> findByLineId(String lineId, Pageable pageable);
 
     @Query(value = "{'lineId': ?0}", sort = "{'departureTime': 1}")
     List<TripScheduleEntity> findFirstTwoByLineId(String lineId, Pageable pageable);

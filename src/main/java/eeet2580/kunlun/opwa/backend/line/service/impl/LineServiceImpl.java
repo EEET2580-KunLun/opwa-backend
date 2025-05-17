@@ -244,9 +244,8 @@ public class LineServiceImpl implements LineService {
 
     @Override
     public List<TripScheduleRes> getLineTrips(String lineId, int page, int size) {
-        List<TripScheduleEntity> trips = tripScheduleRepository.findByLineId(
-                lineId, PageRequest.of(page, size).getSort());
-
+        PageRequest pageRequest = PageRequest.of(page, size);
+        List<TripScheduleEntity> trips = tripScheduleRepository.findByLineId(lineId, pageRequest);
         return tripScheduleMapper.toDtoList(trips);
     }
 
