@@ -122,7 +122,6 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    @Transactional
     public StaffEntity updateStaff(String id, StaffEntity updatedStaff) {
         StaffEntity existedStaff = staffRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Staff not found with: " + id));
@@ -135,7 +134,9 @@ public class StaffServiceImpl implements StaffService {
             existedStaff.setUsername(updatedStaff.getUsername());
         }
         if (updatedStaff.getPassword() != null && !updatedStaff.getPassword().isEmpty()) {
+            System.out.println("updating password");
             existedStaff.setPassword(passwordEncoder.encode(updatedStaff.getPassword()));
+            existedStaff = staffRepository.save(existedStaff);
         }
         if (updatedStaff.getFirstName() != null) {
             existedStaff.setFirstName(updatedStaff.getFirstName());
@@ -186,7 +187,6 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    @Transactional
     public void deleteStaff(String id) {
         staffRepository.deleteById(id);
     }

@@ -22,10 +22,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -72,7 +72,7 @@ public class StaffController {
 
     @PostMapping
     public ResponseEntity<BaseRes<StaffRes>> createStaff(
-            @ModelAttribute @Valid StaffReq request) {
+            @RequestBody @Valid StaffReq request) {
 
         // Create StaffEntity from the request
         StaffEntity staff = staffMapper.fromReq(request);
@@ -84,7 +84,7 @@ public class StaffController {
 
     @PostMapping(path = "/with-pictures", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseRes<StaffRes>> createStaffWithPictures(
-            @ModelAttribute @Valid StaffReq request,
+            @RequestBody @Valid StaffReq request,
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
             @RequestPart(value = "frontIdPicture") MultipartFile frontIdPicture,
             @RequestPart(value = "backIdPicture") MultipartFile backIdPicture
@@ -104,7 +104,7 @@ public class StaffController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BaseRes<StaffRes>> updateStaff(@PathVariable String id, @ModelAttribute @Valid StaffReqForUpdating request) {
+    public ResponseEntity<BaseRes<StaffRes>> updateStaff(@PathVariable String id, @RequestBody @Valid StaffReqForUpdating request) {
         StaffEntity staff = staffMapper.fromReq(request);
         try {
             StaffEntity updatedStaff = staffService.updateStaff(id, staff);

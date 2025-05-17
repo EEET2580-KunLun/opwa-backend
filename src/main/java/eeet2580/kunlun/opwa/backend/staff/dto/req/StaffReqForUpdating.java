@@ -2,7 +2,6 @@ package eeet2580.kunlun.opwa.backend.staff.dto.req;
 
 import eeet2580.kunlun.opwa.backend.staff.model.AddressEntity;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity.Role;
-import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Past;
@@ -17,14 +16,12 @@ public class StaffReqForUpdating {
     @Email(regexp = "^[^\\s@]+@[\\w]+\\.(com|vn)$", message = "Invalid email. Must end with '.com' or '.vn'.")
     private String email;
 
-    @Nullable
     @Pattern(regexp = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%!.]).{8,}", message = "Password must contain uppercase, lowercase, digit, special character, and minimum 8 characters.")
     private String password;
 
     @Pattern(regexp = "^[a-zA-ZÀ-ỹ\\s]{1,50}$", message = "Name must only contain alphabetic characters.")
     private String firstName;
 
-    @Nullable
     @Pattern(regexp = "^$|^[a-zA-ZÀ-ỹ\\s]{1,50}$", message = "Invalid middle name.")
     private String middleName;
 
