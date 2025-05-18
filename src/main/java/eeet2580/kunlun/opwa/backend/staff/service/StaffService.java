@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 public interface StaffService {
-    PagedResponse<StaffRes> getAllStaffs(int page, int size, String sortBy, String direction);
+    PagedResponse<StaffRes> getAllStaffs(int page, int size, String sortBy, String direction, Boolean active);
 
     Optional<StaffEntity> getStaffById(String id);
 

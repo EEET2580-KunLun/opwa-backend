@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LineService {
-    PagedResponse<LineRes> getAllLines(int page, int size, String sortBy, String direction);
+    PagedResponse<LineRes> getAllLines(int page, int size, String sortBy, String direction, String status);
 
     Optional<LineRes> getLineById(String id);
 

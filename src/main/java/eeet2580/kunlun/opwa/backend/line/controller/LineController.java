@@ -42,9 +42,10 @@ public class LineController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "2") int size,
             @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "ASC") String direction) {
+            @RequestParam(defaultValue = "ASC") String direction,
+            @RequestParam(required = false) String status) {
 
-        PagedResponse<LineRes> linesPage = lineService.getAllLines(page, size, sortBy, direction);
+        PagedResponse<LineRes> linesPage = lineService.getAllLines(page, size, sortBy, direction, status);
         BaseRes<PagedResponse<LineRes>> response = new BaseRes<>(
                 HttpStatus.OK.value(), "Line list retrieved successfully", linesPage);
         return ResponseEntity.ok(response);

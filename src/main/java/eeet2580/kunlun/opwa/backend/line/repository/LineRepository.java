@@ -1,6 +1,8 @@
 package eeet2580.kunlun.opwa.backend.line.repository;
 
 import eeet2580.kunlun.opwa.backend.line.model.LineEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
@@ -14,4 +16,6 @@ public interface LineRepository extends MongoRepository<LineEntity, String> {
     boolean existsByName(String name);
 
     Optional<LineEntity> findByName(String name);
+
+    Page<LineEntity> findByStatus(LineEntity.Status status, Pageable pageable);
 }

@@ -34,13 +34,39 @@ public class StaffServiceImpl implements StaffService {
     private final StaffMapper staffMapper;
     private final PasswordEncoder passwordEncoder;
 
+//    @Override
+//    public PagedResponse<StaffRes> getAllStaffs(int page, int size, String sortBy, String direction) {
+//        Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ?
+//                Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
+//
+//        Pageable pageable = PageRequest.of(page, size, sort);
+//        Page<StaffEntity> staffsPage = staffRepository.findAll(pageable);
+//
+//        List<StaffRes> content = staffMapper.toResList(staffsPage.getContent());
+//
+//        return new PagedResponse<>(
+//                content,
+//                staffsPage.getNumber(),
+//                staffsPage.getSize(),
+//                staffsPage.getTotalElements(),
+//                staffsPage.getTotalPages(),
+//                staffsPage.isLast()
+//        );
+//    }
+    // This method is used to get all staffs with pagination and sorting
     @Override
-    public PagedResponse<StaffRes> getAllStaffs(int page, int size, String sortBy, String direction) {
+    public PagedResponse<StaffRes> getAllStaffs(int page, int size, String sortBy, String direction, Boolean active) {
         Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ?
                 Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<StaffEntity> staffsPage = staffRepository.findAll(pageable);
+        Page<StaffEntity> staffsPage;
+
+        if (active != null) {
+            staffsPage = staffRepository.findByEmployed(active, pageable);
+        } else {
+            staffsPage = staffRepository.findAll(pageable);
+        }
 
         List<StaffRes> content = staffMapper.toResList(staffsPage.getContent());
 
