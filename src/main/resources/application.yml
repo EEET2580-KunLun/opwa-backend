@@ -29,3 +29,8 @@ server:
 app:
     frontend:
         base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
+pawa:
+    frontend:
+        base-url: ${PAWA_FRONTEND_URL:http://localhost:3000}
+    service:
+        base-url: ${PAWA_SERVICE_URL:http://localhost:8443}

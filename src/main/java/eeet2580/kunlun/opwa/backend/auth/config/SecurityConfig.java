@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v1/auth/**", "/oauth2/**", "/login/**", "/v1/csrf").permitAll()
+                        .requestMatchers("/v1/auth/**", "/oauth2/**", "/login/**", "/v1/csrf", "/v1/notifications").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/lines/**", "/v1/stations/**").permitAll()
                         .anyRequest().authenticated())
 
@@ -90,7 +90,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(Objects.requireNonNull(environment.getProperty("app.frontend.base-url"))));
+        configuration.setAllowedOrigins(List.of(Objects.requireNonNull(environment.getProperty("app.frontend.base-url")), Objects.requireNonNull(environment.getProperty("pawa.frontend.base-url"))));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));

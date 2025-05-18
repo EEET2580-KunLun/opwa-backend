@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 public class ServiceConfig {
 
-    @Value("${pawa.service.url:https://localhost:8443}")
+    @Value("${pawa.service.base-url:https://localhost:8443}")
     private String pawaServiceUrl;
 
     @Value("${pawa.service.timeout:5000}")
