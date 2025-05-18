@@ -60,4 +60,9 @@ public interface LineService {
      * Find the next three upcoming trips for a station
      */
     List<TripScheduleRes> findNextThreeUpcomingTrips(String stationId, LocalDateTime fromTime);
+
+    /**
+     * Check whether a line with the given name already exists.
+     */
+    boolean existsByName(String name);
 }

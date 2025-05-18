@@ -437,4 +437,9 @@ public class LineServiceImpl implements LineService {
 
         return tripScheduleMapper.toDtoList(trips);
     }
+
+    @Override
+    public boolean existsByName(String name) {
+        return lineRepository.existsByName(name);
+    }
 }
