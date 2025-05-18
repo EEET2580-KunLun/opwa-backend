@@ -1,0 +1,16 @@
+services:
+  backend:
+    build: .
+    container_name: opwa-backend
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    env_file:
+      - .env
+    environment:
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      FIREBASE_BUCKET_NAME: ${FIREBASE_BUCKET_NAME}
+      FIREBASE_CREDENTIALS_PATH: ${FIREBASE_CREDENTIALS_PATH}
+      FIREBASE_SERVICE_ACCOUNT_BASE64: ${FIREBASE_SERVICE_ACCOUNT_BASE64}
+    volumes:
+      - /tmp:/tmp
+    restart: unless-stopped
