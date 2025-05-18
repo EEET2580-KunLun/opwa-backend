@@ -31,6 +31,6 @@ app:
         base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
 pawa:
     frontend:
-        base-url: ${PAWA_FRONTEND_URL:http://localhost:3000}
+        base-url: ${PAWA_FRONTEND_URL:https://localhost:3000}
     service:
-        base-url: ${PAWA_SERVICE_URL:http://localhost:8443}
+        base-url: ${PAWA_SERVICE_URL:https://localhost:8443}
