@@ -50,8 +50,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v1/auth/**", "/oauth2/**", "/login/**", "/v1/csrf", "/v1/notifications").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/lines/**", "/v1/stations/**").permitAll()
+                        .requestMatchers("/v1/auth/**", "/oauth2/**", "/login/**", "/v1/csrf").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/lines/**", "/v1/stations/**", "/v1/notifications/**").permitAll()
                         .anyRequest().authenticated())
 
                 .oauth2Login(oauth2 -> oauth2
