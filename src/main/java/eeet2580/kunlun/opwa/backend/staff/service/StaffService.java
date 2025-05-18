@@ -18,7 +18,11 @@ public interface StaffService {
 
     StaffEntity createStaff(StaffReq req);
 
-    StaffEntity updateStaff(String id, StaffReqForUpdating req);
+    StaffEntity updateStaff(String id,
+                            StaffReqForUpdating req,
+                            MultipartFile profilePhoto,
+                            MultipartFile frontIdImage,
+                            MultipartFile backIdImage);
 
     void deleteStaff(String id);
 

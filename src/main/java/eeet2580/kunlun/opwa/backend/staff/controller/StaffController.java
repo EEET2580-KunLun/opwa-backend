@@ -83,7 +83,7 @@ public class StaffController {
 
     @PostMapping(path = "/with-pictures", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseRes<StaffRes>> createStaffWithPictures(
-            @RequestBody @Valid StaffReq request,
+            @RequestPart("request") @Valid StaffReq request,
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
             @RequestPart(value = "frontIdPicture") MultipartFile frontIdPicture,
             @RequestPart(value = "backIdPicture") MultipartFile backIdPicture
@@ -102,9 +102,14 @@ public class StaffController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BaseRes<StaffRes>> updateStaff(@PathVariable String id, @RequestBody @Valid StaffReqForUpdating request) {
+    public ResponseEntity<BaseRes<StaffRes>> updateStaff(
+            @PathVariable String id,
+            @RequestPart("request") @Valid StaffReqForUpdating request,
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
+            @RequestPart(value = "frontIdPicture", required = false) MultipartFile frontIdPicture,
+            @RequestPart(value = "backIdPicture", required = false) MultipartFile backIdPicture) {
         try {
-            StaffEntity updatedStaff = staffService.updateStaff(id, request);
+            StaffEntity updatedStaff = staffService.updateStaff(id, request, profilePicture, frontIdPicture, backIdPicture);
             StaffRes staffDto = staffMapper.toRes(updatedStaff);
             BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.OK.value(), "Staff updated successfully", staffDto);
             return ResponseEntity.ok(response);

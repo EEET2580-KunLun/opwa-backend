@@ -121,70 +121,90 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public StaffEntity updateStaff(String id, StaffReqForUpdating req) {
-        StaffEntity updatedStaff = staffMapper.fromReq(req);
+    public StaffEntity updateStaff(String id,
+                                   StaffReqForUpdating req,
+                                   MultipartFile profilePhoto,
+                                   MultipartFile frontIdImage,
+                                   MultipartFile backIdImage) {
 
-        StaffEntity existedStaff = staffRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Staff not found with: " + id));
+        try {
+            // Create staff first
+            StaffEntity updatedStaff = staffMapper.fromReq(req);
 
-        // Only update fields that are provided (not null)
-        if (updatedStaff.getEmail() != null) {
-            existedStaff.setEmail(updatedStaff.getEmail());
-        }
-        if (updatedStaff.getUsername() != null) {
-            existedStaff.setUsername(updatedStaff.getUsername());
-        }
-        if (updatedStaff.getPassword() != null && !updatedStaff.getPassword().isEmpty()) {
-            System.out.println("updating password");
-            existedStaff.setPassword(passwordEncoder.encode(updatedStaff.getPassword()));
-            existedStaff = staffRepository.save(existedStaff);
-        }
-        if (updatedStaff.getFirstName() != null) {
-            existedStaff.setFirstName(updatedStaff.getFirstName());
-        }
-        if (updatedStaff.getMiddleName() != null) {
-            existedStaff.setMiddleName(updatedStaff.getMiddleName());
-        }
-        if (updatedStaff.getLastName() != null) {
-            existedStaff.setLastName(updatedStaff.getLastName());
-        }
-        if (updatedStaff.getDateOfBirth() != null) {
-            existedStaff.setDateOfBirth(updatedStaff.getDateOfBirth());
-        }
-        if (updatedStaff.getRole() != null) {
-            existedStaff.setRole(updatedStaff.getRole());
-        }
-        if (updatedStaff.getShift() != null) {
-            existedStaff.setShift(updatedStaff.getShift());
-        }
-        // Handle boolean field - employed
-        existedStaff.setEmployed(updatedStaff.isEmployed());
-
-        if (updatedStaff.getResidenceAddressEntity() != null) {
-            existedStaff.setResidenceAddressEntity(updatedStaff.getResidenceAddressEntity());
-        }
-
-        // Handle phone number specially
-        if (updatedStaff.getPhoneNumber() != null) {
-            if (updatedStaff.getPhoneNumber().startsWith("******")) {
-                // Phone number unchanged (still masked) - keep original
-            } else {
-                // New phone number - encrypt it
-                existedStaff.setPhoneNumber(encryptPhoneNumber(updatedStaff.getPhoneNumber()));
+            if (frontIdImage != null && backIdImage != null) {
+                uploadIdPictures(id, req.getEmail(), frontIdImage, backIdImage);
             }
-        }
 
-        // Handle national ID specially
-        if (updatedStaff.getNationalId() != null) {
-            if (updatedStaff.getNationalId().startsWith("********")) {
-                // National ID unchanged (still masked) - keep original
-            } else {
-                // New national ID - encrypt it
-                existedStaff.setNationalId(encryptNationalId(updatedStaff.getNationalId()));
+            if (profilePhoto != null) {
+                uploadAvatar(profilePhoto, id, req.getEmail());
             }
-        }
 
-        return staffRepository.save(existedStaff);
+            StaffEntity existedStaff = staffRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Staff not found with: " + id));
+
+            // Only update fields that are provided (not null)
+            if (updatedStaff.getEmail() != null) {
+                existedStaff.setEmail(updatedStaff.getEmail());
+            }
+            if (updatedStaff.getUsername() != null) {
+                existedStaff.setUsername(updatedStaff.getUsername());
+            }
+            if (updatedStaff.getPassword() != null && !updatedStaff.getPassword().isEmpty()) {
+                System.out.println("updating password");
+                existedStaff.setPassword(passwordEncoder.encode(updatedStaff.getPassword()));
+                existedStaff = staffRepository.save(existedStaff);
+            }
+            if (updatedStaff.getFirstName() != null) {
+                existedStaff.setFirstName(updatedStaff.getFirstName());
+            }
+            if (updatedStaff.getMiddleName() != null) {
+                existedStaff.setMiddleName(updatedStaff.getMiddleName());
+            }
+            if (updatedStaff.getLastName() != null) {
+                existedStaff.setLastName(updatedStaff.getLastName());
+            }
+            if (updatedStaff.getDateOfBirth() != null) {
+                existedStaff.setDateOfBirth(updatedStaff.getDateOfBirth());
+            }
+            if (updatedStaff.getRole() != null) {
+                existedStaff.setRole(updatedStaff.getRole());
+            }
+            if (updatedStaff.getShift() != null) {
+                existedStaff.setShift(updatedStaff.getShift());
+            }
+            // Handle boolean field - employed
+            existedStaff.setEmployed(updatedStaff.isEmployed());
+
+            if (updatedStaff.getResidenceAddressEntity() != null) {
+                existedStaff.setResidenceAddressEntity(updatedStaff.getResidenceAddressEntity());
+            }
+
+            // Handle phone number specially
+            if (updatedStaff.getPhoneNumber() != null) {
+                if (updatedStaff.getPhoneNumber().startsWith("******")) {
+                    // Phone number unchanged (still masked) - keep original
+                } else {
+                    // New phone number - encrypt it
+                    existedStaff.setPhoneNumber(encryptPhoneNumber(updatedStaff.getPhoneNumber()));
+                }
+            }
+
+            // Handle national ID specially
+            if (updatedStaff.getNationalId() != null) {
+                if (updatedStaff.getNationalId().startsWith("********")) {
+                    // National ID unchanged (still masked) - keep original
+                } else {
+                    // New national ID - encrypt it
+                    existedStaff.setNationalId(encryptNationalId(updatedStaff.getNationalId()));
+                }
+            }
+
+            // Save with image URLs
+            return staffRepository.save(existedStaff);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process images during staff creation", e);
+        }
     }
 
     @Override
