@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class InviteLinkRes {
-    private String inviteLink;
+public class InviteTokenRes {
+    private String inviteToken;
 }

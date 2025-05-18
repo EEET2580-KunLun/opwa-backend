@@ -9,6 +9,8 @@ import eeet2580.kunlun.opwa.backend.staff.dto.mapper.StaffMapper;
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
+import eeet2580.kunlun.opwa.backend.staff.service.StaffInviteService;
+import eeet2580.kunlun.opwa.backend.staff.service.StaffService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,12 +20,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -32,15 +36,28 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final StaffService staffService;
+    private final StaffMapper staffMapper;
+    private final StaffInviteService staffInviteService;
+
     private final JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/register")
-    public ResponseEntity<BaseRes<StaffEntity>> register(
-            @RequestParam("token") String token,
+    public ResponseEntity<BaseRes<StaffRes>> register(
+            @RequestParam(value = "token", required = false) String token,
             @Valid @RequestBody StaffReq req) {
 
-        StaffEntity staff = authService.registerStaff(req, token);
-        BaseRes<StaffEntity> response = new BaseRes<>(HttpStatus.OK.value(), "Account created successfully.", staff);
+        if (token == null || token.isEmpty() || staffInviteService.getInvite(token).isEmpty()) {
+            BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.BAD_REQUEST.value(),
+                    "You need a valid token to create staff", null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        StaffEntity staff = staffService.createStaff(req);
+        staffInviteService.deleteInvite(token);
+        StaffRes staffDto = staffMapper.toRes(staff);
+
+        BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.OK.value(), "Account created successfully.", staffDto);
         return ResponseEntity.ok(response);
     }
 
@@ -149,7 +166,7 @@ public class AuthController {
         response.addCookie(refreshCookie);
 
         // Return proper BaseRes with safe response
-        BaseRes<?> responseBody = new BaseRes<>(HttpStatus.OK.value(), "Logout successful",null);
+        BaseRes<?> responseBody = new BaseRes<>(HttpStatus.OK.value(), "Logout successful", null);
         return ResponseEntity.ok(responseBody);
     }
 
@@ -178,7 +195,7 @@ public class AuthController {
             String email = jwtTokenUtil.getEmailFromToken(token);
 
             // Get staff entity from service
-            StaffEntity staff = authService.findByEmail(email);
+            StaffEntity staff = staffService.getStaffByEmail(email).orElseThrow();
 
             // Generate new tokens
             TokenRes tokens = authService.validate(staff);
@@ -198,5 +215,20 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new BaseRes<>(HttpStatus.UNAUTHORIZED.value(), e.getMessage(), null));
         }
+    }
+
+    @GetMapping("/invite/{token}")
+    public ResponseEntity<BaseRes<Map<String, Boolean>>> getInviteByToken(@PathVariable String token) {
+        boolean isValid = staffInviteService.isInviteValid(token);
+
+        Map<String, Boolean> result = new HashMap<>();
+        result.put("is_valid", isValid);
+
+        BaseRes<Map<String, Boolean>> response = new BaseRes<>(
+                HttpStatus.OK.value(),
+                isValid ? "Token is valid" : "Token is invalid",
+                result);
+
+        return ResponseEntity.ok(response);
     }
 }

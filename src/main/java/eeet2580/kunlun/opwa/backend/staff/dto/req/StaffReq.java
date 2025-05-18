@@ -59,4 +59,6 @@ public class StaffReq {
 
     @Valid
     private AddressEntity address;
+
+    private String inviteToken;
 }

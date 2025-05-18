@@ -1,6 +1,8 @@
 package eeet2580.kunlun.opwa.backend.staff.service;
 
 import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
+import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
+import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReqForUpdating;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadIdRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
@@ -14,9 +16,9 @@ public interface StaffService {
 
     Optional<StaffEntity> getStaffById(String id);
 
-    StaffEntity createStaff(StaffEntity staff);
+    StaffEntity createStaff(StaffReq req);
 
-    StaffEntity updateStaff(String id, StaffEntity updatedStaff);
+    StaffEntity updateStaff(String id, StaffReqForUpdating req);
 
     void deleteStaff(String id);
 
@@ -26,7 +28,7 @@ public interface StaffService {
 
     void removeAvatar(String staffId, String currentUserEmail);
 
-    StaffEntity createStaffWithImages(StaffEntity staff,
+    StaffEntity createStaffWithImages(StaffReq req,
                                       MultipartFile profilePhoto,
                                       MultipartFile frontIdImage,
                                       MultipartFile backIdImage) throws IOException;

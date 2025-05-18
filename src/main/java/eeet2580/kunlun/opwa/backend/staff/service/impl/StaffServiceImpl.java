@@ -2,6 +2,8 @@ package eeet2580.kunlun.opwa.backend.staff.service.impl;
 
 import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
 import eeet2580.kunlun.opwa.backend.staff.dto.mapper.StaffMapper;
+import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
+import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReqForUpdating;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadIdRes;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity;
@@ -57,13 +59,10 @@ public class StaffServiceImpl implements StaffService {
         return staffRepository.findById(id);
     }
 
-//    @Override
-//    public StaffEntity createStaff(StaffEntity staff) {
-//        return staffRepository.save(staff);
-//    }
-
     @Override
-    public StaffEntity createStaff(StaffEntity staff) {
+    public StaffEntity createStaff(StaffReq req) {
+        StaffEntity staff = staffMapper.fromReq(req);
+
         // Check for duplicate email
         if (staffRepository.findByEmail(staff.getEmail()).isPresent()) {
             throw new RuntimeException("Staff with email " + staff.getEmail() + " already exists");
@@ -86,7 +85,7 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     @Transactional
-    public StaffEntity createStaffWithImages(StaffEntity staff,
+    public StaffEntity createStaffWithImages(StaffReq req,
                                              MultipartFile profilePhoto,
                                              MultipartFile frontIdImage,
                                              MultipartFile backIdImage) throws IOException {
@@ -99,7 +98,7 @@ public class StaffServiceImpl implements StaffService {
             }
 
             // Create staff first
-            StaffEntity savedStaff = createStaff(staff);
+            StaffEntity savedStaff = createStaff(req);
 
             // Upload images
             if (profilePhoto != null) {
@@ -122,7 +121,9 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public StaffEntity updateStaff(String id, StaffEntity updatedStaff) {
+    public StaffEntity updateStaff(String id, StaffReqForUpdating req) {
+        StaffEntity updatedStaff = staffMapper.fromReq(req);
+
         StaffEntity existedStaff = staffRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Staff not found with: " + id));
 

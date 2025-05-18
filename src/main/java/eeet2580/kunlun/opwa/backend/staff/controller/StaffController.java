@@ -5,7 +5,7 @@ import eeet2580.kunlun.opwa.backend.common.dto.resp.PagedResponse;
 import eeet2580.kunlun.opwa.backend.staff.dto.mapper.StaffMapper;
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReq;
 import eeet2580.kunlun.opwa.backend.staff.dto.req.StaffReqForUpdating;
-import eeet2580.kunlun.opwa.backend.staff.dto.resp.InviteLinkRes;
+import eeet2580.kunlun.opwa.backend.staff.dto.resp.InviteTokenRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.StaffRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadAvatarRes;
 import eeet2580.kunlun.opwa.backend.staff.dto.resp.UploadIdRes;
@@ -75,8 +75,7 @@ public class StaffController {
             @RequestBody @Valid StaffReq request) {
 
         // Create StaffEntity from the request
-        StaffEntity staff = staffMapper.fromReq(request);
-        StaffEntity createdStaff = staffService.createStaff(staff);
+        StaffEntity createdStaff = staffService.createStaff(request);
         StaffRes staffDto = staffMapper.toRes(createdStaff);
         BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.CREATED.value(), "Staff created successfully", staffDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -91,10 +90,9 @@ public class StaffController {
     ) {
 
         // Create StaffEntity from the request
-        StaffEntity staff = staffMapper.fromReq(request);
         StaffEntity createdStaff = null;
         try {
-            createdStaff = staffService.createStaffWithImages(staff, profilePicture, frontIdPicture, backIdPicture);
+            createdStaff = staffService.createStaffWithImages(request, profilePicture, frontIdPicture, backIdPicture);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -105,9 +103,8 @@ public class StaffController {
 
     @PutMapping("/{id}")
     public ResponseEntity<BaseRes<StaffRes>> updateStaff(@PathVariable String id, @RequestBody @Valid StaffReqForUpdating request) {
-        StaffEntity staff = staffMapper.fromReq(request);
         try {
-            StaffEntity updatedStaff = staffService.updateStaff(id, staff);
+            StaffEntity updatedStaff = staffService.updateStaff(id, request);
             StaffRes staffDto = staffMapper.toRes(updatedStaff);
             BaseRes<StaffRes> response = new BaseRes<>(HttpStatus.OK.value(), "Staff updated successfully", staffDto);
             return ResponseEntity.ok(response);
@@ -131,17 +128,10 @@ public class StaffController {
 
     @PreAuthorize("hasAnyRole('MASTER_ADMIN', 'ADMIN')")// ADMIN is allowed for testing
     @PostMapping("/invite")
-    public ResponseEntity<BaseRes<InviteLinkRes>> inviteStaff(HttpServletRequest request) {
+    public ResponseEntity<BaseRes<InviteTokenRes>> inviteStaff(HttpServletRequest request) {
         String token = staffInviteService.generateInvite();
-        String baseUrl = request.getScheme()
-                + "://"
-                + request.getServerName()
-                + (request.getServerPort() != 80 && request.getServerPort() != 443
-                ? ":" + request.getServerPort()
-                : "");
-        String link = baseUrl + "v1/auth/register?token=" + token;
-        InviteLinkRes inviteLinkRes = new InviteLinkRes(link);
-        BaseRes<InviteLinkRes> response = new BaseRes<>(HttpStatus.OK.value(), "Invitation generated successfully", inviteLinkRes);
+        InviteTokenRes inviteTokenRes = new InviteTokenRes(token);
+        BaseRes<InviteTokenRes> response = new BaseRes<>(HttpStatus.OK.value(), "Invitation generated successfully", inviteTokenRes);
         return ResponseEntity.ok(response);
     }
 

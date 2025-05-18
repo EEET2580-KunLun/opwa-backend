@@ -8,4 +8,8 @@ public interface StaffInviteService {
     String generateInvite();
 
     Optional<StaffInviteTokenEntity> getInvite(String token);
+
+    boolean isInviteValid(String token);
+
+    void deleteInvite(String token);
 }
