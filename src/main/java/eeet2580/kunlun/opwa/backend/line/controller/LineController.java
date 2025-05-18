@@ -27,7 +27,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/lines")
@@ -236,5 +238,15 @@ public class LineController {
                     HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+    }
+
+    @GetMapping("/check-name")
+    public ResponseEntity<Map<String, Boolean>> checkName(
+            @RequestParam String name
+    ) {
+        boolean exists = lineService.existsByName(name);
+        return ResponseEntity.ok(
+                Collections.singletonMap("exists", exists)
+        );
     }
 }
