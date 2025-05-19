@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Objects;
+
 @Configuration
 @RequiredArgsConstructor
 public class HttpRedirectConfig {
@@ -39,8 +41,7 @@ public class HttpRedirectConfig {
         connector.setPort(8080);
         connector.setSecure(false);
 
-        // Get the HTTPS port from environment variable, with default value 9443
-        int serverPort = Integer.parseInt(environment.getProperty("server.port", "9443"));
+        int serverPort = Integer.parseInt(Objects.requireNonNull(environment.getProperty("server.port")));
         connector.setRedirectPort(serverPort);
 
         return connector;
