@@ -14,6 +14,6 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 COPY .env /app/.env
 
-EXPOSE 8080
+EXPOSE 9443
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
