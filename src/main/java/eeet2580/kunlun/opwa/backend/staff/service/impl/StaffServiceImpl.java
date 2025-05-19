@@ -172,9 +172,9 @@ public class StaffServiceImpl implements StaffService {
             if (updatedStaff.getEmail() != null) {
                 existedStaff.setEmail(updatedStaff.getEmail());
             }
-            if (updatedStaff.getUsername() != null) {
-                existedStaff.setUsername(updatedStaff.getUsername());
-            }
+
+            existedStaff.setUsername(updatedStaff.getUsername());
+
             if (updatedStaff.getPassword() != null && !updatedStaff.getPassword().isEmpty()) {
                 System.out.println("updating password");
                 existedStaff.setPassword(passwordEncoder.encode(updatedStaff.getPassword()));

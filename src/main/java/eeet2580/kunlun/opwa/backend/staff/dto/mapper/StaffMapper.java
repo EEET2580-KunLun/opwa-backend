@@ -75,6 +75,7 @@ public class StaffMapper {
 
         StaffEntity entity = new StaffEntity();
         entity.setEmail(req.getEmail());
+        entity.setUsername(req.getUsername());
         entity.setFirstName(req.getFirstName());
         entity.setMiddleName(req.getMiddleName());
         entity.setLastName(req.getLastName());

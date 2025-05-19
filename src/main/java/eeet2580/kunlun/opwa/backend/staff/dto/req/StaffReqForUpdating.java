@@ -4,6 +4,7 @@ import eeet2580.kunlun.opwa.backend.staff.model.AddressEntity;
 import eeet2580.kunlun.opwa.backend.staff.model.StaffEntity.Role;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
@@ -15,6 +16,10 @@ import java.time.LocalDate;
 public class StaffReqForUpdating {
     @Email(regexp = "^[^\\s@]+@[\\w]+\\.(com|vn)$", message = "Invalid email. Must end with '.com' or '.vn'.")
     private String email;
+
+    @NotBlank
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]{1,20}$", message = "Username may contain letters (including Vietnamese), digits, and spaces, and must be 1–20 characters long")
+    private String username;
 
     @Pattern(regexp = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%!.]).{8,}", message = "Password must contain uppercase, lowercase, digit, special character, and minimum 8 characters.")
     private String password;
