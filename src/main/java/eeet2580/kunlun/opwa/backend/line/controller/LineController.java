@@ -27,7 +27,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/lines")
@@ -40,9 +42,10 @@ public class LineController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "2") int size,
             @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "ASC") String direction) {
+            @RequestParam(defaultValue = "ASC") String direction,
+            @RequestParam(required = false) String status) {
 
-        PagedResponse<LineRes> linesPage = lineService.getAllLines(page, size, sortBy, direction);
+        PagedResponse<LineRes> linesPage = lineService.getAllLines(page, size, sortBy, direction, status);
         BaseRes<PagedResponse<LineRes>> response = new BaseRes<>(
                 HttpStatus.OK.value(), "Line list retrieved successfully", linesPage);
         return ResponseEntity.ok(response);
@@ -236,5 +239,15 @@ public class LineController {
                     HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+    }
+
+    @GetMapping("/check-name")
+    public ResponseEntity<Map<String, Boolean>> checkName(
+            @RequestParam String name
+    ) {
+        boolean exists = lineService.existsByName(name);
+        return ResponseEntity.ok(
+                Collections.singletonMap("exists", exists)
+        );
     }
 }

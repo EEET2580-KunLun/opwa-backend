@@ -47,12 +47,24 @@ public class LineServiceImpl implements LineService {
     private final SuspensionNotificationService suspensionNotificationService;
 
     @Override
-    public PagedResponse<LineRes> getAllLines(int page, int size, String sortBy, String direction) {
+    public PagedResponse<LineRes> getAllLines(int page, int size, String sortBy, String direction, String status) {
         Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ?
                 Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<LineEntity> linesPage = lineRepository.findAll(pageable);
+        Page<LineEntity> linesPage;
+
+        if (status != null && !status.isEmpty()) {
+            try {
+                LineEntity.Status statusEnum = LineEntity.Status.valueOf(status.toUpperCase());
+                linesPage = lineRepository.findByStatus(statusEnum, pageable);
+            } catch (IllegalArgumentException e) {
+                // Handle invalid status value - fallback to finding all
+                linesPage = lineRepository.findAll(pageable);
+            }
+        } else {
+            linesPage = lineRepository.findAll(pageable);
+        }
 
         List<LineRes> content = lineMapper.toDtoList(linesPage.getContent());
 
@@ -436,5 +448,10 @@ public class LineServiceImpl implements LineService {
                 fromTime, stationId, PageRequest.of(0, 3));
 
         return tripScheduleMapper.toDtoList(trips);
+    }
+
+    @Override
+    public boolean existsByName(String name) {
+        return lineRepository.existsByName(name);
     }
 }

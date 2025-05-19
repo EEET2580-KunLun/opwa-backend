@@ -48,9 +48,12 @@ public class StaffController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "firstName") String sortBy,
-            @RequestParam(defaultValue = "ASC") String direction) {
+            @RequestParam(defaultValue = "ASC") String direction,
+            @RequestParam(required = false) Boolean active) {
 
-        PagedResponse<StaffRes> staffPage = staffService.getAllStaffs(page, size, sortBy, direction);
+        System.out.println("active: " + active);
+
+        PagedResponse<StaffRes> staffPage = staffService.getAllStaffs(page, size, sortBy, direction, active);
         BaseRes<PagedResponse<StaffRes>> response = new BaseRes<>(
                 HttpStatus.OK.value(), "Staff list retrieved successfully", staffPage);
         return ResponseEntity.ok(response);

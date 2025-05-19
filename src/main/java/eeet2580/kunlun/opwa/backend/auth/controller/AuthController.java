@@ -18,7 +18,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,7 +38,6 @@ public class AuthController {
     private final StaffService staffService;
     private final StaffMapper staffMapper;
     private final StaffInviteService staffInviteService;
-
     private final JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/register")
@@ -116,31 +114,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new BaseRes<>(HttpStatus.UNAUTHORIZED.value(), e.getMessage() + "mf", null));
         }
-    }
-
-    // for testing authorization
-    @GetMapping("/master-admin")
-    @PreAuthorize("hasRole('MASTER_ADMIN')")
-    public ResponseEntity<String> masterAdminEndpoint() {
-        return ResponseEntity.ok("Master Admin access");
-    }
-
-    @GetMapping("/admin")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> adminEndpoint() {
-        return ResponseEntity.ok("Admin access");
-    }
-
-    @GetMapping("/operator")
-    @PreAuthorize("hasRole('OPERATOR')")
-    public ResponseEntity<String> operatorEndpoint() {
-        return ResponseEntity.ok("Operator access");
-    }
-
-    @GetMapping("/ticket-agent")
-    @PreAuthorize("hasRole('TICKET_AGENT')")
-    public ResponseEntity<String> ticketAgentEndpoint() {
-        return ResponseEntity.ok("Ticket Agent access");
     }
 
     // Modify later

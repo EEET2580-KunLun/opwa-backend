@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LineService {
-    PagedResponse<LineRes> getAllLines(int page, int size, String sortBy, String direction);
+    PagedResponse<LineRes> getAllLines(int page, int size, String sortBy, String direction, String status);
 
     Optional<LineRes> getLineById(String id);
 
@@ -60,4 +60,9 @@ public interface LineService {
      * Find the next three upcoming trips for a station
      */
     List<TripScheduleRes> findNextThreeUpcomingTrips(String stationId, LocalDateTime fromTime);
+
+    /**
+     * Check whether a line with the given name already exists.
+     */
+    boolean existsByName(String name);
 }

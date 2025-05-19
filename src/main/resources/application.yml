@@ -24,8 +24,19 @@ jwt:
     refresh-expiration: ${JWT_REFRESH_EXPIRATION}
 
 server:
-    port: ${SERVER_PORT}
+    port: ${SERVER_PORT:9443}
+    ssl:
+        enabled: true
+        key-store: classpath:springboot-keystore.p12
+        key-store-password: ${KEY_STORE_PASSWORD:opwa-password}
+        key-store-type: PKCS12
+        key-alias: ${KEY_ALIAS:tomcat}
 
 app:
     frontend:
-        base-url: ${FRONTEND_BASE_URL}
+        base-url: ${FRONTEND_BASE_URL:https://localhost:5173}
+pawa:
+    frontend:
+        base-url: ${PAWA_FRONTEND_URL:https://localhost:3000}
+    service:
+        base-url: ${PAWA_SERVICE_URL:https://localhost:8443}

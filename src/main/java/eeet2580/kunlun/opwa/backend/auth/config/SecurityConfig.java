@@ -51,7 +51,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v1/auth/**", "/oauth2/**", "/login/**", "/v1/csrf").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/lines/**", "/v1/stations/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/lines/**", "/v1/stations/**", "/v1/notifications/**").permitAll()
                         .anyRequest().authenticated())
 
                 .oauth2Login(oauth2 -> oauth2
@@ -90,9 +90,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(Objects.requireNonNull(environment.getProperty("app.frontend.base-url"))));
+
+        configuration.setAllowedOrigins(List.of(
+                Objects.requireNonNull(environment.getProperty("app.frontend.base-url")),
+                Objects.requireNonNull(environment.getProperty("pawa.frontend.base-url"))
+        ));
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN", "token"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
 
