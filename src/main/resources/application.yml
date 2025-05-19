@@ -24,13 +24,13 @@ jwt:
     refresh-expiration: ${JWT_REFRESH_EXPIRATION}
 
 server:
-    port: ${SERVER_PORT:8080}
+    port: ${SERVER_PORT:9443}
     ssl:
         enabled: true
         key-store: classpath:springboot-keystore.p12
-        key-store-password: ${KEY_STORE_PASSWORD}
+        key-store-password: ${KEY_STORE_PASSWORD:opwa-password}
         key-store-type: PKCS12
-        key-alias: ${KEY_ALIAS}
+        key-alias: ${KEY_ALIAS:tomcat}
 
 app:
     frontend:

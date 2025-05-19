@@ -7,9 +7,14 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
+@RequiredArgsConstructor
 public class HttpRedirectConfig {
+    private final Environment environment;
+
     @Bean
     public ServletWebServerFactory servletContainer() {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
@@ -33,7 +38,11 @@ public class HttpRedirectConfig {
         connector.setScheme("http");
         connector.setPort(8080);
         connector.setSecure(false);
-        connector.setRedirectPort(9443); // Your HTTPS port
+
+        // Get the HTTPS port from environment variable, with default value 9443
+        int serverPort = Integer.parseInt(environment.getProperty("server.port", "9443"));
+        connector.setRedirectPort(serverPort);
+
         return connector;
     }
 }
