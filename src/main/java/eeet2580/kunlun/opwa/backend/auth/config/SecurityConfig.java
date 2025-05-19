@@ -90,7 +90,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(Objects.requireNonNull(environment.getProperty("app.frontend.base-url")), Objects.requireNonNull(environment.getProperty("pawa.frontend.base-url"))));
+
+        configuration.setAllowedOrigins(List.of(
+                Objects.requireNonNull(environment.getProperty("app.frontend.base-url")),
+                Objects.requireNonNull(environment.getProperty("pawa.frontend.base-url"))
+        ));
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN", "token"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
