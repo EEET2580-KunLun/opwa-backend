@@ -12,10 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.ZoneId;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -25,6 +23,54 @@ public class StatisticServiceImpl implements StatisticService {
     private final PawaService pawaService;
     private final StaffRepository staffRepository;
 
+//    @Override
+//    public TicketAnalyticsRes getTicketAnalytics() {
+//        List<TicketRes> tickets = pawaService.getAllTickets()
+//                .collectList()
+//                .block();
+//
+//        if (tickets == null || tickets.isEmpty()) {
+//            return new TicketAnalyticsRes(new ArrayList<>(), new ArrayList<>(), 0);
+//        }
+//
+//        Map<TicketRes.TicketType, Integer> typeCountMap = new HashMap<>();
+//        Map<TicketRes.TicketStatus, Integer> statusCountMap = new HashMap<>();
+//
+//        for (TicketRes ticket : tickets) {
+//            TicketRes.TicketType mappedType = null;
+//            try {
+//                mappedType = TicketRes.TicketType.valueOf(ticket.getType().name());
+//                typeCountMap.put(mappedType, typeCountMap.getOrDefault(mappedType, 0) + 1);
+//            } catch (IllegalArgumentException e) {
+//                log.warn("Unknown ticket type: {}", ticket.getType());
+//            }
+//
+//            TicketRes.TicketStatus mappedStatus = null;
+//            try {
+//                mappedStatus = TicketRes.TicketStatus.valueOf(ticket.getStatus().name());
+//                statusCountMap.put(mappedStatus, statusCountMap.getOrDefault(mappedStatus, 0) + 1);
+//            } catch (IllegalArgumentException e) {
+//                log.warn("Unknown ticket status: {}", ticket.getStatus());
+//            }
+//        }
+//
+//        List<TicketAnalyticsRes.TicketTypeCount> typeCountsList = new ArrayList<>();
+//        for (Map.Entry<TicketRes.TicketType, Integer> entry : typeCountMap.entrySet()) {
+//            typeCountsList.add(new TicketAnalyticsRes.TicketTypeCount(entry.getKey(), entry.getValue()));
+//        }
+//
+//        List<TicketAnalyticsRes.TicketStatusCount> statusCountsList = new ArrayList<>();
+//        for (Map.Entry<TicketRes.TicketStatus, Integer> entry : statusCountMap.entrySet()) {
+//            statusCountsList.add(new TicketAnalyticsRes.TicketStatusCount(entry.getKey(), entry.getValue()));
+//        }
+//
+//        return TicketAnalyticsRes.builder()
+//                .ticketTypeCounts(typeCountsList)
+//                .ticketStatusCounts(statusCountsList)
+//                .totalTickets(tickets.size())
+//                .build();
+//    }
+
     @Override
     public TicketAnalyticsRes getTicketAnalytics() {
         List<TicketRes> tickets = pawaService.getAllTickets()
@@ -32,44 +78,80 @@ public class StatisticServiceImpl implements StatisticService {
                 .block();
 
         if (tickets == null || tickets.isEmpty()) {
-            return new TicketAnalyticsRes(new ArrayList<>(), new ArrayList<>(), 0);
+            return TicketAnalyticsRes.builder()
+                    .ticketTypeCounts(new ArrayList<>())
+                    .ticketStatusCounts(new ArrayList<>())
+                    .totalTickets(0)
+                    .totalRevenue(0L)
+                    .guestTicketPercentage(0.0)
+                    .monthlyRevenues(Collections.nCopies(12, 0L))
+                    .build();
         }
 
         Map<TicketRes.TicketType, Integer> typeCountMap = new HashMap<>();
         Map<TicketRes.TicketStatus, Integer> statusCountMap = new HashMap<>();
 
+        long totalRevenue = 0L;
+        int guestCount = 0;
+        long[] monthlyRevenue = new long[12];
+
         for (TicketRes ticket : tickets) {
-            TicketRes.TicketType mappedType = null;
             try {
-                mappedType = TicketRes.TicketType.valueOf(ticket.getType().name());
-                typeCountMap.put(mappedType, typeCountMap.getOrDefault(mappedType, 0) + 1);
+                TicketRes.TicketType type = TicketRes.TicketType.valueOf(ticket.getType().name());
+                typeCountMap.compute(type, (k, v) -> v == null ? 1 : v + 1);
             } catch (IllegalArgumentException e) {
                 log.warn("Unknown ticket type: {}", ticket.getType());
             }
 
-            TicketRes.TicketStatus mappedStatus = null;
             try {
-                mappedStatus = TicketRes.TicketStatus.valueOf(ticket.getStatus().name());
-                statusCountMap.put(mappedStatus, statusCountMap.getOrDefault(mappedStatus, 0) + 1);
+                TicketRes.TicketStatus status = TicketRes.TicketStatus.valueOf(ticket.getStatus().name());
+                statusCountMap.compute(status, (k, v) -> v == null ? 1 : v + 1);
             } catch (IllegalArgumentException e) {
                 log.warn("Unknown ticket status: {}", ticket.getStatus());
             }
+
+            long price = ticket.getPrice();
+            totalRevenue += price;
+
+            // use the primitive getter
+            if (ticket.getIsGuestTicket()) {
+                guestCount++;
+            }
+
+            if (ticket.getPurchaseTime() != null) {
+                int monthIndex = ticket.getPurchaseTime()
+                        .atZone(ZoneId.systemDefault())
+                        .getMonthValue() - 1;
+                monthlyRevenue[monthIndex] += price;
+            }
         }
 
-        List<TicketAnalyticsRes.TicketTypeCount> typeCountsList = new ArrayList<>();
-        for (Map.Entry<TicketRes.TicketType, Integer> entry : typeCountMap.entrySet()) {
-            typeCountsList.add(new TicketAnalyticsRes.TicketTypeCount(entry.getKey(), entry.getValue()));
-        }
+        List<TicketAnalyticsRes.TicketTypeCount> typeCounts = typeCountMap.entrySet().stream()
+                .map(e -> new TicketAnalyticsRes.TicketTypeCount(e.getKey(), e.getValue()))
+                .toList();
 
-        List<TicketAnalyticsRes.TicketStatusCount> statusCountsList = new ArrayList<>();
-        for (Map.Entry<TicketRes.TicketStatus, Integer> entry : statusCountMap.entrySet()) {
-            statusCountsList.add(new TicketAnalyticsRes.TicketStatusCount(entry.getKey(), entry.getValue()));
-        }
+        List<TicketAnalyticsRes.TicketStatusCount> statusCounts = statusCountMap.entrySet().stream()
+                .map(e -> new TicketAnalyticsRes.TicketStatusCount(e.getKey(), e.getValue()))
+                .toList();
+
+        int totalTickets = tickets.size();
+        double guestPercentage = totalTickets > 0
+                ? guestCount * 100.0 / totalTickets
+                : 0.0;
+
+        log.info("Total tickets: {}, Guest tickets: {}, Total revenue: {}", totalTickets, guestPercentage, totalRevenue);
+
+        List<Long> monthlyRevenues = Arrays.stream(monthlyRevenue)
+                .boxed()
+                .toList();
 
         return TicketAnalyticsRes.builder()
-                .ticketTypeCounts(typeCountsList)
-                .ticketStatusCounts(statusCountsList)
-                .totalTickets(tickets.size())
+                .ticketTypeCounts(typeCounts)
+                .ticketStatusCounts(statusCounts)
+                .totalTickets(totalTickets)
+                .totalRevenue(totalRevenue)
+                .guestTicketPercentage(guestPercentage)
+                .monthlyRevenues(monthlyRevenues)
                 .build();
     }
 

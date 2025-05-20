@@ -18,6 +18,10 @@ public class TicketRes {
     private Instant expiryTime;
     private TicketStatus status;
     private Integer price;
+    private String userId;
+    private Integer validDay;
+    private Boolean isGuestTicket;
+    private Long validHours;
 
     public enum TicketType {
         ONE_WAY,

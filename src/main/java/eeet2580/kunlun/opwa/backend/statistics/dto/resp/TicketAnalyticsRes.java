@@ -32,4 +32,8 @@ public class TicketAnalyticsRes {
     private List<TicketTypeCount> ticketTypeCounts;
     private List<TicketStatusCount> ticketStatusCounts;
     private Integer totalTickets;
+    // new metrics
+    private Long totalRevenue;
+    private Double guestTicketPercentage;
+    private List<Long> monthlyRevenues;
 }
